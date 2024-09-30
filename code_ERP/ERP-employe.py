@@ -1,3 +1,5 @@
+from ERP_role import Role
+
 class Employe:
     def __init__(self, id_employe, prenom, nom, poste, salaire, date_naissance, date_embauche, sexe, statut, allergies_preferences_alimentaires, code_unique, role):
         self.id_employe = id_employe
