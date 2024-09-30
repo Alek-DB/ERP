@@ -1,9 +1,9 @@
-import tkinter as tk
-from tkinter import messagebox
+from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+                               QLabel, QLineEdit, QPushButton, QMessageBox, QGridLayout)
+from PySide6.QtCore import Qt
+import sys
 import requests
 
-
-# Classe Modèle
 class Modele:
     def __init__(self):
         self.authenticated = False
@@ -37,189 +37,162 @@ class Modele:
             return False
 
 
-# Classe Vue
-class Vue:
+from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+                               QLabel, QLineEdit, QPushButton, QMessageBox, QGridLayout, QStackedWidget)
+from PySide6.QtCore import Qt
+import sys
+import requests
+
+# La classe Modele reste inchangée
+
+class Vue(QMainWindow):
     def __init__(self, controleur):
+        super().__init__()
         self.controleur = controleur
-        self.root = tk.Tk()
-        self.root.title("Application ERP")
+        self.setWindowTitle("Application ERP")
+        self.setGeometry(100, 100, 600, 400)
 
-        # Initialisation des frames
-        self.frame_connexion = None
-        self.frame_vente = None
-        self.frame_splash = None
+        self.stacked_widget = QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
 
-        # Construction des frames
-        self.construire_frame_connexion()
-        self.construire_frame_vente()
-        self.construire_frame_splash()
+        self.frame_connexion = self.creer_frame_connexion()
+        self.frame_vente = self.creer_frame_vente()
+        self.frame_splash = self.creer_frame_splash()
+
+        self.stacked_widget.addWidget(self.frame_connexion)
+        self.stacked_widget.addWidget(self.frame_splash)
+        self.stacked_widget.addWidget(self.frame_vente)
 
         # Affichage initial
         self.basculer_vers_connexion()
 
-    def centrer_fenetre(self):
-        # Mettre à jour la géométrie de la fenêtre
-        self.root.update_idletasks()
+    def creer_frame_connexion(self):
+        widget = QWidget()
+        layout = QVBoxLayout()
 
-        # Obtenir la taille de l'écran
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
+        titre = QLabel("Connexion ERP")
+        titre.setAlignment(Qt.AlignCenter)
+        titre.setStyleSheet("font-size: 18px; font-weight: bold;")
+        layout.addWidget(titre)
 
-        # Obtenir la taille de la fenêtre
-        window_width = self.root.winfo_width()
-        window_height = self.root.winfo_height()
+        form_layout = QGridLayout()
+        self.entry_username = QLineEdit()
+        self.entry_password = QLineEdit()
+        self.entry_password.setEchoMode(QLineEdit.Password)
+        form_layout.addWidget(QLabel("Nom d'utilisateur"), 0, 0)
+        form_layout.addWidget(self.entry_username, 0, 1)
+        form_layout.addWidget(QLabel("Mot de passe"), 1, 0)
+        form_layout.addWidget(self.entry_password, 1, 1)
 
-        # Calculer la position pour centrer la fenêtre
-        x = (screen_width // 2) - (window_width // 2)
-        y = (screen_height // 2) - (window_height // 2)
+        layout.addLayout(form_layout)
 
-        # Définir la géométrie de la fenêtre
-        self.root.geometry(f'{window_width}x{window_height}+{x}+{y}')
+        self.button_login = QPushButton("Se connecter")
+        self.button_login.clicked.connect(self.controleur.se_connecter)
+        layout.addWidget(self.button_login)
 
-    def construire_frame_connexion(self):
-        self.frame_connexion = tk.Frame(self.root, width=300, height=200)
-        self.frame_connexion.pack_propagate(False)
+        widget.setLayout(layout)
+        return widget
 
-        # Frame pour le titre
-        frame_titre = tk.Frame(self.frame_connexion)
-        frame_titre.pack(pady=(20, 10))
+    def creer_frame_vente(self):
+        widget = QWidget()
+        layout = QVBoxLayout()
 
-        label_titre = tk.Label(frame_titre, text="Connexion ERP", font=("Helvetica", 16, "bold"))
-        label_titre.pack()
+        titre = QLabel("Enregistrement des ventes")
+        titre.setAlignment(Qt.AlignCenter)
+        titre.setStyleSheet("font-size: 18px; font-weight: bold;")
+        layout.addWidget(titre)
 
-        # Frame pour les champs de connexion
-        frame_champs = tk.Frame(self.frame_connexion)
-        frame_champs.pack(pady=10)
+        explication = QLabel("Veuillez remplir les champs ci-dessous pour enregistrer une nouvelle vente.")
+        explication.setWordWrap(True)
+        layout.addWidget(explication)
 
-        self.label_username = tk.Label(frame_champs, text="Nom d'utilisateur")
-        self.entry_username = tk.Entry(frame_champs)
-        self.label_password = tk.Label(frame_champs, text="Mot de passe")
-        self.entry_password = tk.Entry(frame_champs, show="*")
+        form_layout = QGridLayout()
+        self.entry_item = QLineEdit()
+        self.entry_quantite = QLineEdit()
+        self.entry_prix = QLineEdit()
+        self.entry_date = QLineEdit()
 
-        self.label_username.grid(row=0, column=0, sticky="e", padx=5, pady=2)
-        self.entry_username.grid(row=0, column=1, padx=5, pady=2)
-        self.label_password.grid(row=1, column=0, sticky="e", padx=5, pady=2)
-        self.entry_password.grid(row=1, column=1, padx=5, pady=2)
+        form_layout.addWidget(QLabel("Article"), 0, 0)
+        form_layout.addWidget(self.entry_item, 0, 1)
+        form_layout.addWidget(QLabel("Quantité"), 1, 0)
+        form_layout.addWidget(self.entry_quantite, 1, 1)
+        form_layout.addWidget(QLabel("Prix Unitaire"), 2, 0)
+        form_layout.addWidget(self.entry_prix, 2, 1)
+        form_layout.addWidget(QLabel("Date"), 3, 0)
+        form_layout.addWidget(self.entry_date, 3, 1)
 
-        # Frame pour le bouton de connexion
-        frame_bouton = tk.Frame(self.frame_connexion)
-        frame_bouton.pack(pady=10)
+        layout.addLayout(form_layout)
 
-        self.button_login = tk.Button(frame_bouton, text="Se connecter", command=self.controleur.se_connecter)
-        self.button_login.pack()
+        buttons_layout = QHBoxLayout()
+        self.button_enregistrer_vente = QPushButton("Accepter vente")
+        self.button_enregistrer_vente.clicked.connect(self.controleur.enregistrer_vente)
+        self.button_annuler = QPushButton("Annuler")
+        self.button_annuler.clicked.connect(self.controleur.annuler_vente)
+        buttons_layout.addWidget(self.button_enregistrer_vente)
+        buttons_layout.addWidget(self.button_annuler)
 
+        layout.addLayout(buttons_layout)
 
-    def construire_frame_vente(self):
-        self.frame_vente = tk.Frame(self.root, width=600, height=400)
-        self.frame_vente.pack_propagate(False)
+        widget.setLayout(layout)
+        return widget
 
-        # Frame pour le titre et l'explication
-        frame_titre = tk.Frame(self.frame_vente)
-        frame_titre.pack(pady=(20, 10), fill='x')
+    def creer_frame_splash(self):
+        widget = QWidget()
+        layout = QVBoxLayout()
 
-        self.label_titre_vente = tk.Label(frame_titre, text="Enregistrement des ventes", font=("Helvetica", 18, "bold"))
-        self.label_titre_vente.pack()
+        titre = QLabel("ERP Manager")
+        titre.setAlignment(Qt.AlignCenter)
+        titre.setStyleSheet("font-size: 24px; font-weight: bold;")
+        layout.addWidget(titre)
 
-        self.label_explication = tk.Label(frame_titre, text="Veuillez remplir les champs ci-dessous pour enregistrer une nouvelle vente.", font=("Helvetica", 10), wraplength=500)
-        self.label_explication.pack(pady=(5, 0))
+        sous_titre = QLabel("Système de gestion intégré pour votre entreprise")
+        sous_titre.setAlignment(Qt.AlignCenter)
+        layout.addWidget(sous_titre)
 
-        # Frame pour les champs d'entrée
-        frame_entrees = tk.Frame(self.frame_vente)
-        frame_entrees.pack(pady=10)
+        buttons_layout = QHBoxLayout()
+        self.button_gestion = QPushButton("Gestion interne")
+        self.button_gestion.clicked.connect(lambda: self.controleur.action_splash("gestion"))
+        self.button_options = QPushButton("Options d'utilisation")
+        self.button_options.clicked.connect(lambda: self.controleur.action_splash("options"))
+        self.button_formulaire = QPushButton("Formulaire")
+        self.button_formulaire.clicked.connect(lambda: self.controleur.action_splash("formulaire"))
 
-        self.label_item = tk.Label(frame_entrees, text="Article", font=("Helvetica", 12))
-        self.entry_item = tk.Entry(frame_entrees, font=("Helvetica", 12))
-        self.label_quantite = tk.Label(frame_entrees, text="Quantité", font=("Helvetica", 12))
-        self.entry_quantite = tk.Entry(frame_entrees, font=("Helvetica", 12))
-        self.label_prix = tk.Label(frame_entrees, text="Prix Unitaire", font=("Helvetica", 12))
-        self.entry_prix = tk.Entry(frame_entrees, font=("Helvetica", 12))
-        self.label_date = tk.Label(frame_entrees, text="Date", font=("Helvetica", 12))
-        self.entry_date = tk.Entry(frame_entrees, font=("Helvetica", 12))
+        buttons_layout.addWidget(self.button_gestion)
+        buttons_layout.addWidget(self.button_options)
+        buttons_layout.addWidget(self.button_formulaire)
 
-        self.label_item.grid(row=0, column=0, sticky="e", padx=10, pady=5)
-        self.entry_item.grid(row=0, column=1, padx=10, pady=5)
-        self.label_quantite.grid(row=1, column=0, sticky="e", padx=10, pady=5)
-        self.entry_quantite.grid(row=1, column=1, padx=10, pady=5)
-        self.label_prix.grid(row=2, column=0, sticky="e", padx=10, pady=5)
-        self.entry_prix.grid(row=2, column=1, padx=10, pady=5)
-        self.label_date.grid(row=3, column=0, sticky="e", padx=10, pady=5)
-        self.entry_date.grid(row=3, column=1, padx=10, pady=5)
+        layout.addLayout(buttons_layout)
 
-        # Frame pour les boutons
-        frame_boutons = tk.Frame(self.frame_vente)
-        frame_boutons.pack(pady=20)
-
-        self.button_enregistrer_vente = tk.Button(frame_boutons, text="Accepter vente", command=self.controleur.enregistrer_vente, font=("Helvetica", 12))
-        self.button_enregistrer_vente.pack(side=tk.LEFT, padx=10)
-
-        self.button_annuler = tk.Button(frame_boutons, text="Annuler", command=self.controleur.annuler_vente, font=("Helvetica", 12))
-        self.button_annuler.pack(side=tk.LEFT, padx=10)
-
-    def construire_frame_splash(self):
-        self.frame_splash = tk.Frame(self.root, width=600, height=400)
-        self.frame_splash.pack_propagate(False)
-
-        self.label_title = tk.Label(self.frame_splash, text="ERP Manager", font=("Helvetica", 24, "bold"))
-        self.label_subtitle = tk.Label(self.frame_splash, text="Système de gestion intégré pour votre entreprise",
-                                       font=("Helvetica", 12))
-
-        self.button_frame = tk.Frame(self.frame_splash)
-        self.button_gestion = tk.Button(self.button_frame, text="Gestion interne",
-                                        command=lambda: self.controleur.action_splash("gestion"))
-        self.button_options = tk.Button(self.button_frame, text="Options d'utilisation",
-                                        command=lambda: self.controleur.action_splash("options"))
-        self.button_formulaire = tk.Button(self.button_frame, text="Formulaire",
-                                           command=lambda: self.controleur.action_splash("formulaire"))
-
-        self.label_title.pack(pady=(50, 10))
-        self.label_subtitle.pack(pady=(0, 50))
-        self.button_frame.pack()
-        self.button_gestion.pack(side=tk.LEFT, padx=10)
-        self.button_options.pack(side=tk.LEFT, padx=10)
-        self.button_formulaire.pack(side=tk.LEFT, padx=10)
+        widget.setLayout(layout)
+        return widget
 
     def afficher_message(self, titre, message):
-        messagebox.showinfo(titre, message)
+        QMessageBox.information(self, titre, message)
 
     def basculer_vers_connexion(self):
-        self.frame_vente.pack_forget() if hasattr(self, 'frame_vente') else None
-        self.frame_splash.pack_forget() if hasattr(self, 'frame_splash') else None
-        self.frame_connexion.pack()
-        self.centrer_fenetre()
+        self.stacked_widget.setCurrentWidget(self.frame_connexion)
 
     def basculer_vers_splash(self):
-        self.frame_connexion.pack_forget()
-        self.frame_vente.pack_forget()
-        self.frame_splash.pack()
-
-        self.root.geometry('600x400')
-        self.centrer_fenetre()
+        self.stacked_widget.setCurrentWidget(self.frame_splash)
 
     def basculer_vers_vente(self):
-        self.frame_splash.pack_forget()
-        self.frame_vente.pack()
-
-        self.root.geometry('600x400')
-        self.centrer_fenetre()
+        self.stacked_widget.setCurrentWidget(self.frame_vente)
 
     def obtenir_identifiants(self):
-        return self.entry_username.get(), self.entry_password.get()
+        return self.entry_username.text(), self.entry_password.text()
 
     def obtenir_informations_vente(self):
-        item = self.entry_item.get()
-        quantite = self.entry_quantite.get()
-        prix_unitaire = self.entry_prix.get()
-        date = self.entry_date.get()
-        return item, quantite, prix_unitaire, date
+        return (self.entry_item.text(),
+                self.entry_quantite.text(),
+                self.entry_prix.text(),
+                self.entry_date.text())
 
-    def demarrer(self):
-        self.root.mainloop()
+# Les classes Controleur et le code de démarrage restent inchangés
 
-
-# Classe Contrôleur modifiée
 class Controleur:
     def __init__(self):
         self.modele = Modele()
+        self.app = QApplication(sys.argv)
         self.vue = Vue(self)
 
     def se_connecter(self):
@@ -230,14 +203,6 @@ class Controleur:
         else:
             self.vue.afficher_message("Erreur", "Nom d'utilisateur ou mot de passe incorrect.")
 
-    def action_splash(self, action):
-        if action == "gestion":
-            self.vue.afficher_message("Gestion interne", "Fonctionnalité non implémentée")
-        elif action == "options":
-            self.vue.afficher_message("Options d'utilisation", "Fonctionnalité non implémentée")
-        elif action == "formulaire":
-            self.vue.basculer_vers_vente()
-
     def enregistrer_vente(self):
         item, quantite, prix_unitaire, date = self.vue.obtenir_informations_vente()
         if self.modele.creer_vente(item, quantite, prix_unitaire, date):
@@ -246,14 +211,20 @@ class Controleur:
             self.vue.afficher_message("Erreur", "Erreur lors de l'enregistrement de la vente.")
 
     def annuler_vente(self):
-        # Retourner au splash screen
         self.vue.basculer_vers_splash()
 
+    def action_splash(self, action):
+        if action == "gestion":
+            self.vue.afficher_message("Gestion interne", "Fonctionnalité non implémentée")
+        elif action == "options":
+            self.vue.afficher_message("Options d'utilisation", "Fonctionnalité non implémentée")
+        elif action == "formulaire":
+            self.vue.basculer_vers_vente()
+
     def demarrer(self):
-        self.vue.demarrer()
+        self.vue.show()
+        sys.exit(self.app.exec())
 
-
-# Démarrage de l'application
 if __name__ == "__main__":
     app = Controleur()
     app.demarrer()
