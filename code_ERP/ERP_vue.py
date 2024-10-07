@@ -12,7 +12,7 @@ class Vue(QMainWindow):
         super().__init__()
         self.controleur = controleur
         self.setWindowTitle("Application ERP")
-        self.setGeometry(100, 100, 600, 400)
+        self.setGeometry(100, 100, 800, 600)
 
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
@@ -20,8 +20,8 @@ class Vue(QMainWindow):
         self.frame_connexion = self.creer_frame_connexion()
         self.frame_vente = self.creer_frame_vente()
         self.frame_splash = self.creer_frame_splash()
-        self.frame_greant_global = QGerantGlobal()
-        self.frame_succursale = QSuccursale()
+        self.frame_greant_global = QGerantGlobal(self)
+        self.frame_succursale = QSuccursale(self)
 
         self.stacked_widget.addWidget(self.frame_connexion)
         self.stacked_widget.addWidget(self.frame_splash)
