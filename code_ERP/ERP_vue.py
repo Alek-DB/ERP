@@ -1,8 +1,9 @@
 from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                                QLabel, QLineEdit, QPushButton, QMessageBox, QGridLayout, QStackedWidget)
 from PySide6.QtCore import Qt
-import sys
-import requests
+
+from ERP_vue_dossier.gerant_global import QGerantGlobal
+from ERP_vue_dossier.succursale import QSuccursale
 
 # La classe Modele reste inchangée
 
@@ -19,10 +20,14 @@ class Vue(QMainWindow):
         self.frame_connexion = self.creer_frame_connexion()
         self.frame_vente = self.creer_frame_vente()
         self.frame_splash = self.creer_frame_splash()
+        self.frame_greant_global = QGerantGlobal()
+        self.frame_succursale = QSuccursale()
 
         self.stacked_widget.addWidget(self.frame_connexion)
         self.stacked_widget.addWidget(self.frame_splash)
         self.stacked_widget.addWidget(self.frame_vente)
+        self.stacked_widget.addWidget(self.frame_greant_global)
+        self.stacked_widget.addWidget(self.frame_succursale )
 
         # Affichage initial
         self.basculer_vers_connexion()
@@ -128,7 +133,8 @@ class Vue(QMainWindow):
 
         widget.setLayout(layout)
         return widget
-
+    
+    
     def afficher_message(self, titre, message):
         QMessageBox.information(self, titre, message)
 
@@ -140,6 +146,12 @@ class Vue(QMainWindow):
 
     def basculer_vers_vente(self):
         self.stacked_widget.setCurrentWidget(self.frame_vente)
+        
+    def basculer_vers_gerant_global(self):
+        self.stacked_widget.setCurrentWidget(self.frame_greant_global)
+        
+    def basculer_vers_succursale(self):
+        self.stacked_widget.setCurrentWidget(self.frame_succursale)
 
     def obtenir_identifiants(self):
         return self.entry_username.text(), self.entry_password.text()
