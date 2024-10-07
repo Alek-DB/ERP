@@ -1,25 +1,21 @@
-from ERP_data_base import DatabaseManager
-
-class EmployeDAO:
-    def __init__(self):
-        self.db_manager = DatabaseManager()  # Get the singleton instance
-
-    def add_employe(self, employe):
-        query = """
-        INSERT INTO Employes (nom, prenom, poste, salaire, date_naissance, date_embauche, sexe, statut, allergies_preferences_alimentaires, code_unique)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """
-        parameters = (
-            employe.nom,
-            employe.prenom,
-            employe.poste,
-            employe.salaire,
-            employe.date_naissance,
-            employe.date_embauche,
-            employe.sexe,
-            employe.statut,
-            employe.allergies,
-            employe.code_unique
-        )
-        rows_affected = self.db_manager.execute_update(query, parameters)
-        return rows_affected > 0  # Return True if the insert was successful
+def add_employe(self, employe_data):
+    query = """
+    INSERT INTO Employes (nom, prenom, poste, salaire, date_naissance, date_embauche, sexe, statut,
+                          allergies_preferences_alimentaires, code_unique, role)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """
+    parameters = (
+        employe_data['nom'],
+        employe_data['prenom'],
+        employe_data['poste'],
+        employe_data['salaire'],
+        employe_data['date_naissance'],
+        employe_data['date_embauche'],
+        employe_data['sexe'],
+        employe_data['statut'],
+        employe_data['allergies_preferences_alimentaires'],
+        employe_data['code_unique'],
+        employe_data['role']  # Include the role in the parameters
+    )
+    rows_affected = self.db_manager.execute_update(query, parameters)
+    return rows_affected > 0
