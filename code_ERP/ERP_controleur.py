@@ -15,8 +15,9 @@ class Controleur:
     def se_connecter(self):
         username, password = self.vue.obtenir_identifiants()
         if self.modele.verifier_identifiants(username, password):
+            #VERIFIER LE ROLE DE L'UTILISATEUR ET LE BASCULER SUR LA PAGE DE SON ROLE
             self.vue.afficher_message("Succès", "Connexion réussie !")
-            self.vue.basculer_vers_splash()
+            self.vue.basculer_vers_gerant_global()
         else:
             self.vue.afficher_message("Erreur", "Nom d'utilisateur ou mot de passe incorrect.")
 
