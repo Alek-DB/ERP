@@ -41,6 +41,8 @@ class Controleur:
             self.vue.basculer_vers_vente()
         elif action == "stock":
             self.vue.basculer_vers_stock()
+        elif action == "Produit":
+            self.vue.basculer_vers_produit()
 
     def demarrer(self):
         self.vue.show()

@@ -4,12 +4,10 @@ from PySide6.QtCore import Qt
 
 from ERP_vue_dossier.gerant_global import QGerantGlobal
 from ERP_vue_dossier.succursale import QSuccursale
-<<<<<<< HEAD
 from ERP_vue_dossier.stock import QStock
-
-=======
 from ERP_vue_dossier.ajout_succursale import QAjouterSuccursale
->>>>>>> 306cd06c02481665caded28c0d2bbd2f979a4916
+from ERP_vue_dossier.produit import QProduit
+
 
 # La classe Modele reste inchangée
 
@@ -26,6 +24,7 @@ class Vue(QMainWindow):
         self.frame_connexion = self.creer_frame_connexion()
         self.frame_vente = self.creer_frame_vente()
         self.frame_stock = QStock(self)
+        self.frame_produit = QProduit(self,self.controleur.db_manager)
         self.frame_splash = self.creer_frame_splash()
         self.frame_greant_global = QGerantGlobal(self)
         self.frame_succursale = QSuccursale(self)
@@ -34,16 +33,12 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_connexion)
         self.stacked_widget.addWidget(self.frame_splash)
         self.stacked_widget.addWidget(self.frame_vente)
-<<<<<<< HEAD
-        self.stacked_widget.addWidget(self.frame_stock)
 
-        #self.stacked_widget.addWidget(self.frame_greant_global)
-        #self.stacked_widget.addWidget(self.frame_succursale )
-=======
+        self.stacked_widget.addWidget(self.frame_stock)
         self.stacked_widget.addWidget(self.frame_greant_global)
         self.stacked_widget.addWidget(self.frame_succursale)
         self.stacked_widget.addWidget(self.frame_ajout_succursale)
->>>>>>> 306cd06c02481665caded28c0d2bbd2f979a4916
+        self.stacked_widget.addWidget(self.frame_produit)
 
         # Affichage initial
         self.basculer_vers_connexion()
@@ -143,11 +138,14 @@ class Vue(QMainWindow):
         self.button_formulaire.clicked.connect(lambda: self.controleur.action_splash("formulaire"))
         self.button_formulaire = QPushButton("Stock")
         self.button_formulaire.clicked.connect(lambda: self.controleur.action_splash("stock"))
-
+        self.button_produit = QPushButton("Produit")
+        self.button_produit.clicked.connect(lambda: self.controleur.action_splash("Produit"))
+        
         buttons_layout.addWidget(self.button_gestion)
         buttons_layout.addWidget(self.button_options)
         buttons_layout.addWidget(self.button_formulaire)
-
+        buttons_layout.addWidget(self.button_produit)
+        
         layout.addLayout(buttons_layout)
 
         widget.setLayout(layout)
@@ -174,11 +172,12 @@ class Vue(QMainWindow):
         
     def basculer_vers_succursale(self):
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
-<<<<<<< HEAD
+    
+    def basculer_vers_produit(self):
+        self.stacked_widget.setCurrentWidget(self.frame_produit)
         
     def basculer_vers_gerant_global(self):
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
-=======
     
     def basculer_vers_ajout_succursale(self, ajout):
         if ajout:
@@ -186,7 +185,6 @@ class Vue(QMainWindow):
         else:
             self.frame_ajout_succursale.set_to_modif()
         self.stacked_widget.setCurrentWidget(self.frame_ajout_succursale)
->>>>>>> 306cd06c02481665caded28c0d2bbd2f979a4916
 
     def obtenir_identifiants(self):
         return self.entry_username.text(), self.entry_password.text()
