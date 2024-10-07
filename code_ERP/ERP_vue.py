@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt
 
 from ERP_vue_dossier.gerant_global import QGerantGlobal
 from ERP_vue_dossier.succursale import QSuccursale
+from ERP_vue_dossier.ajout_succursale import QAjouterSuccursale
 
 # La classe Modele reste inchangée
 
@@ -22,12 +23,14 @@ class Vue(QMainWindow):
         self.frame_splash = self.creer_frame_splash()
         self.frame_greant_global = QGerantGlobal(self)
         self.frame_succursale = QSuccursale(self)
+        self.frame_ajout_succursale = QAjouterSuccursale(self)
 
         self.stacked_widget.addWidget(self.frame_connexion)
         self.stacked_widget.addWidget(self.frame_splash)
         self.stacked_widget.addWidget(self.frame_vente)
         self.stacked_widget.addWidget(self.frame_greant_global)
-        self.stacked_widget.addWidget(self.frame_succursale )
+        self.stacked_widget.addWidget(self.frame_succursale)
+        self.stacked_widget.addWidget(self.frame_ajout_succursale)
 
         # Affichage initial
         self.basculer_vers_connexion()
@@ -150,6 +153,13 @@ class Vue(QMainWindow):
         
     def basculer_vers_succursale(self):
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
+    
+    def basculer_vers_ajout_succursale(self, ajout):
+        if ajout:
+            self.frame_ajout_succursale.set_to_ajout()
+        else:
+            self.frame_ajout_succursale.set_to_modif()
+        self.stacked_widget.setCurrentWidget(self.frame_ajout_succursale)
 
     def obtenir_identifiants(self):
         return self.entry_username.text(), self.entry_password.text()
