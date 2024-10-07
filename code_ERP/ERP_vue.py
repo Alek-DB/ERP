@@ -117,6 +117,8 @@ class Vue(QMainWindow):
         self.button_options.clicked.connect(lambda: self.controleur.action_splash("options"))
         self.button_formulaire = QPushButton("Formulaire")
         self.button_formulaire.clicked.connect(lambda: self.controleur.action_splash("formulaire"))
+        self.button_formulaire = QPushButton("Stock")
+        self.button_formulaire.clicked.connect(lambda: self.controleur.action_splash("stock"))
 
         buttons_layout.addWidget(self.button_gestion)
         buttons_layout.addWidget(self.button_options)
