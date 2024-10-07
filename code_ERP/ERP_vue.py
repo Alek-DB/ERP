@@ -23,16 +23,8 @@ class Vue(QMainWindow):
         self.frame_vente = self.creer_frame_vente()
         self.frame_stock = QStock(self)
         self.frame_splash = self.creer_frame_splash()
-<<<<<<< HEAD
-        #self.frame_greant_global = QGerantGlobal(self)
-        #self.frame_succursale = QSuccursale(self)
-        #self.frame_succursale = QSuccursale(self)
-
-        
-=======
         self.frame_greant_global = QGerantGlobal(self)
         self.frame_succursale = QSuccursale(self)
->>>>>>> 994a3b47396a157b1c756332cbd7ba745af0b802
 
         self.stacked_widget.addWidget(self.frame_connexion)
         self.stacked_widget.addWidget(self.frame_splash)
@@ -168,6 +160,12 @@ class Vue(QMainWindow):
         
     def basculer_vers_stock(self):
         self.stacked_widget.setCurrentWidget(self.frame_stock)
+        
+    def basculer_vers_succursale(self):
+        self.stacked_widget.setCurrentWidget(self.frame_succursale)
+        
+    def basculer_vers_gerant_global(self):
+        self.stacked_widget.setCurrentWidget(self.frame_greant_global)
 
     def obtenir_identifiants(self):
         return self.entry_username.text(), self.entry_password.text()
