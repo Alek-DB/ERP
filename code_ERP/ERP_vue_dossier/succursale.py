@@ -58,7 +58,7 @@ class QSuccursale(QWidget):
 
         section_names = ["Nom", "Adresse", "Code"]  # Exemple de noms de sections
         
-        layout_list = []
+        # layout_list = []
 
         # db_manager = DatabaseManager('erp_database.db')
         # query = "SELECT * FROM Succursales"
@@ -81,6 +81,7 @@ class QSuccursale(QWidget):
         #     layout_obj.append(_code)
             
         #     layout_list.append(layout_obj) 
+            
         # liste = QListe("Liste de succursale", layout_list, section_names)
         # main_layout.addWidget(liste, alignment=Qt.AlignCenter)  
 
