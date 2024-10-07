@@ -1,23 +1,24 @@
 import sys
+import sqlite3
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QPushButton, QLabel, QLineEdit, QTableWidget, 
     QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QGridLayout, QDialog
 )
 from PySide6.QtCore import Qt
 
-
+from ERP_data_base import DatabaseManager
 
 
 class AddModifyDialog(QDialog):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         self.setWindowTitle("Ajouter")
 
         # Create the layout
         layout = QGridLayout()
 
-        # Labels and input fields
-        labels = ["Min", "Max", "Quantité", "Nom", "nb Restock", "Prix", "futur champ*"]
+        # Labels et champs de saisie
+        labels = ["Nom", "Code Produit", "Max", "Quantité", "nb Restock", "Prix"]
         self.inputs = {}
 
         for i, label in enumerate(labels):
@@ -27,12 +28,12 @@ class AddModifyDialog(QDialog):
             layout.addWidget(input_field, i, 1)
             self.inputs[label] = input_field
 
-        # Buttons for 'Ajouter/Modifier' and 'Annuler'
-        self.add_modify_button = QPushButton("Ajouter")
+        # Buttons for 'Ajouter' and 'Annuler'
+        self.add_button = QPushButton("Ajouter")
         self.cancel_button = QPushButton("Annuler")
         
         button_layout = QHBoxLayout()
-        button_layout.addWidget(self.add_modify_button)
+        button_layout.addWidget(self.add_button)
         button_layout.addWidget(self.cancel_button)
 
         layout.addLayout(button_layout, len(labels), 1)
@@ -42,11 +43,47 @@ class AddModifyDialog(QDialog):
 
         # Connect cancel button to close the dialog
         self.cancel_button.clicked.connect(self.close)
+        self.add_button.clicked.connect(self.add_product)
+        
+        
+    def add_product(self):
+        """Valider les champs et ajouter le produit dans la base de données."""
+        # Récupérer les valeurs des champs de saisie
+        nom = self.inputs["Nom"].text()
+        code_produit = self.inputs["Code Produit"].text()
+        qte_max = self.inputs["Max"].text()
+        qte_actuelle = self.inputs["Quantité"].text()
+        restock = self.inputs["nb Restock"].text()
+        prix = self.inputs["Prix"].text()
+
+        # Vérifier que tous les champs sont remplis
+        if not (nom and code_produit and qte_max and qte_actuelle and restock and prix):
+            # Ajouter une validation simple
+            print("Tous les champs doivent être remplis.")
+            return
+
+        # Vérifier que les valeurs numériques sont valides
+        try:
+            qte_max = int(qte_max)
+            qte_actuelle = int(qte_actuelle)
+            restock = int(restock)
+            prix = float(prix)
+        except ValueError:
+            print("Erreur : Quantité, Restock et Prix doivent être des nombres valides.")
+            return
+
+        # Appeler la méthode de la classe parente pour insérer les données
+        self.parent().add_new_product(nom, code_produit, qte_max, qte_actuelle, restock, prix)
+        self.close()
         
         
 class QStock(QWidget):
     def __init__(self, parent):
         super().__init__()
+        
+        #set database
+        self.conn = sqlite3.connect("erp_database.db")
+        self.cursor = self.conn.cursor()
 
         # Create the main layout
         stock_layout = QGridLayout()
@@ -83,32 +120,25 @@ class QStock(QWidget):
         stock_layout.addLayout(search_layout, 1, 1)
 
         # Stock table (Liste, max, qte, restock, prix)
-        stock_table = QTableWidget()
-        stock_table.setColumnCount(5)
-        stock_table.setHorizontalHeaderLabels(
-            ["Liste (nom/code)", "max", "qte", "restock", "prix"]
+        self.stock_table = QTableWidget()
+        self.stock_table.setColumnCount(6)
+        self.stock_table.setHorizontalHeaderLabels(
+            ["Nom", "Code Produit", "Max", "Quantité", "Restock", "Prix"]
         )
         
+        self.load_stock_data()
+        
         # Dummy data to simulate stock items
-        stock_table.setRowCount(3)
-        stock_table.setItem(0, 0, QTableWidgetItem("Item 1"))
-        stock_table.setItem(0, 1, QTableWidgetItem("100"))
-        stock_table.setItem(0, 2, QTableWidgetItem("50"))
-        stock_table.setItem(0, 3, QTableWidgetItem("20"))
-        stock_table.setItem(0, 4, QTableWidgetItem("10.0"))
-        stock_table.setItem(1, 0, QTableWidgetItem("Item 2"))
-        stock_table.setItem(1, 1, QTableWidgetItem("200"))
-        stock_table.setItem(1, 2, QTableWidgetItem("150"))
-        stock_table.setItem(1, 3, QTableWidgetItem("50"))
-        stock_table.setItem(1, 4, QTableWidgetItem("20.0"))
-        stock_table.setItem(2, 0, QTableWidgetItem("Item 3"))
-        stock_table.setItem(2, 1, QTableWidgetItem("50"))
-        stock_table.setItem(2, 2, QTableWidgetItem("30"))
-        stock_table.setItem(2, 3, QTableWidgetItem("10"))
-        stock_table.setItem(2, 4, QTableWidgetItem("5.00"))
+        #stock_table.setRowCount(1)
+        #stock_table.setItem(0, 0, QTableWidgetItem("Item 1"))
+        #stock_table.setItem(0, 1, QTableWidgetItem("31651"))
+        #stock_table.setItem(0, 2, QTableWidgetItem("100"))
+        #stock_table.setItem(0, 3, QTableWidgetItem("50"))
+        #stock_table.setItem(0, 4, QTableWidgetItem("20"))
+        #stock_table.setItem(0, 5, QTableWidgetItem("10.0"))
 
         # Add table to layout
-        stock_layout.addWidget(stock_table, 2, 1)
+        stock_layout.addWidget(self.stock_table, 2, 1)
 
         # Set central widget
         
@@ -118,11 +148,55 @@ class QStock(QWidget):
         add_button.clicked.connect(self.add_item)
         remove_button.clicked.connect(self.remove_item)
         modify_button.clicked.connect(self.modify_item)
+        
+        
+    def load_stock_data(self):
+        """Charger les données des produits et du stock depuis la base de données."""
+        query = """
+            SELECT p.nom_produit, p.code_produit, s.qte_max, s.qte_actuelle, s.qte_min_restock, p.prix
+            FROM Stocks s
+            JOIN Produits p ON s.id_produit = p.id_produit
+        """
+        self.cursor.execute(query)
+        rows = self.cursor.fetchall()
+
+        # Ajouter les données dans le tableau
+        self.stock_table.setRowCount(len(rows))
+        for row_index, row_data in enumerate(rows):
+            for col_index, data in enumerate(row_data):
+                self.stock_table.setItem(row_index, col_index, QTableWidgetItem(str(data)))
+
 
     def add_item(self):
         # Open the Add/Modify dialog
-        dialog = AddModifyDialog()
+        dialog = AddModifyDialog(self)
         dialog.exec_()
+        
+    def add_new_product(self, nom, code_produit, qte_max, qte_actuelle, restock, prix):
+        """Insérer un nouveau produit dans la base de données et le tableau."""
+        try:
+            
+            print(nom, code_produit, qte_max, qte_actuelle, restock, prix)
+            
+            # Insérer les données dans la table Produits
+            self.cursor.execute("""
+                INSERT INTO Produits (nom_produit, code_produit, prix)
+                VALUES (?, ?, ?)
+            """, (nom, code_produit, prix))
+            produit_id = self.cursor.lastrowid
+            
+
+            # Insérer les données dans la table Stocks
+            self.cursor.execute("""
+                INSERT INTO Stocks (id_produit, qte_actuelle, qte_max, qte_min_restock)
+                VALUES (?, ?, ?, ?)
+            """, (produit_id, qte_actuelle, qte_max, restock))
+            self.conn.commit()
+
+            # Recharger les données dans le tableau
+            self.load_stock_data()
+        except sqlite3.IntegrityError:
+            print("Erreur : Le produit avec ce code existe déjà.")
 
     def remove_item(self):
         # Code to remove the selected item from the stock
@@ -133,3 +207,5 @@ class QStock(QWidget):
         # Code to modify the selected item in the stock
         print("Modify item clicked")
         # Add logic to modify the selected row
+        
+

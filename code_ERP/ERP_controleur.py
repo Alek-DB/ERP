@@ -2,6 +2,7 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                                QLabel, QLineEdit, QPushButton, QMessageBox, QGridLayout)
 from PySide6.QtCore import Qt
 import sys
+import sqlite3
 import requests
 from ERP_modele import Modele
 from ERP_vue import Vue
