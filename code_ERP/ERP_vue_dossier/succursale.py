@@ -4,6 +4,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from utils.QListe import QListe
+from ERP_data_base import DatabaseManager
 
 class QSuccursale(QWidget):
     def __init__(self, parent):
@@ -54,23 +55,34 @@ class QSuccursale(QWidget):
         main_layout.addSpacerItem(QSpacerItem(40, 20, QSizePolicy.Expanding, QSizePolicy.Minimum))
 
 
-        section_names = ["Nom", "Adresse", "Nombre d'employé"]  # Exemple de noms de sections
+
+        section_names = ["Nom", "Adresse", "Code"]  # Exemple de noms de sections
+        
         layout_list = []
-        for i in range(10):
-            layout_obj = []
-            nom = QPushButton("Button")
-            nom.clicked.connect(self.handle_button_click)
-            layout_obj.append(nom)
+
+        # db_manager = DatabaseManager('erp_database.db')
+        # query = "SELECT * FROM Succursales"
+        # results = db_manager.execute_query(query, (1,))
+
+        # for row in results:
+        #     _nom = row['nom']
+        #     _adresse = row['adresse']
+        #     _code = row["code"]
             
-            addresse = QLabel("addresse")
-            layout_obj.append(addresse)
+        #     layout_obj = []
+        #     nom = QPushButton(_nom)
+        #     nom.clicked.connect(self.handle_button_click)
+        #     layout_obj.append(nom)
             
-            nbEmploye = QLabel("5")
-            layout_obj.append(nbEmploye)
+        #     addresse = QLabel(_adresse)
+        #     layout_obj.append(addresse)
             
-            layout_list.append(layout_obj) 
-        liste = QListe("Liste de succursale", layout_list, section_names)
-        main_layout.addWidget(liste, alignment=Qt.AlignCenter)  
+        #     _code = QLabel("5")
+        #     layout_obj.append(_code)
+            
+        #     layout_list.append(layout_obj) 
+        # liste = QListe("Liste de succursale", layout_list, section_names)
+        # main_layout.addWidget(liste, alignment=Qt.AlignCenter)  
 
         self.setLayout(main_layout)
 
