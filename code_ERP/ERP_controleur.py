@@ -5,13 +5,14 @@ import sys
 import requests
 from ERP_modele import Modele
 from ERP_vue import Vue
+from ERP_data_base import DatabaseManager
 
 class Controleur:
-    def __init__(self):
-        self.modele = Modele()
-        self.app = QApplication(sys.argv)
+    def __init__(self, db_manager):
+        self.db_manager = db_manager
+        self.modele = Modele(self.db_manager)
         self.vue = Vue(self)
-
+        
     def se_connecter(self):
         username, password = self.vue.obtenir_identifiants()
         if self.modele.verifier_identifiants(username, password):
@@ -41,8 +42,17 @@ class Controleur:
 
     def demarrer(self):
         self.vue.show()
-        sys.exit(self.app.exec())
+        
 
 if __name__ == "__main__":
-    app = Controleur()
-    app.demarrer()
+    app = QApplication(sys.argv)
+    try:
+        db_manager = DatabaseManager('erp_database.db')
+        print("Les tables ont été créées avec succès.")
+    except sqlite3.Error as e:
+        QMessageBox.critical(None, "Erreur", f"Une erreur est survenue lors de l'initialisation de la base de données : {e}")
+        sys.exit(1)
+
+    controleur = Controleur(db_manager)
+    controleur.demarrer()
+    sys.exit(app.exec())
