@@ -354,6 +354,9 @@ class DatabaseManager:
 
     def __del__(self):
         self.close_connection()
+    
+    def get_column_names(self):
+        return [description[0] for description in self.cursor.description]
 
 
 
