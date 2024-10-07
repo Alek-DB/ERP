@@ -4,6 +4,7 @@ from PySide6.QtCore import Qt
 
 from ERP_vue_dossier.gerant_global import QGerantGlobal
 from ERP_vue_dossier.succursale import QSuccursale
+from ERP_vue_dossier.add_employe import QAddEmploye
 
 # La classe Modele reste inchangée
 
@@ -22,12 +23,14 @@ class Vue(QMainWindow):
         self.frame_splash = self.creer_frame_splash()
         self.frame_greant_global = QGerantGlobal(self)
         self.frame_succursale = QSuccursale(self)
+        self.frame_add_employe = QAddEmploye(self)
 
         self.stacked_widget.addWidget(self.frame_connexion)
         self.stacked_widget.addWidget(self.frame_splash)
         self.stacked_widget.addWidget(self.frame_vente)
         self.stacked_widget.addWidget(self.frame_greant_global)
-        self.stacked_widget.addWidget(self.frame_succursale )
+        self.stacked_widget.addWidget(self.frame_succursale)
+        self.stacked_widget.addWidget(self.frame_add_employe)
 
         # Affichage initial
         self.basculer_vers_connexion()
@@ -94,8 +97,16 @@ class Vue(QMainWindow):
         self.button_enregistrer_vente.clicked.connect(self.controleur.enregistrer_vente)
         self.button_annuler = QPushButton("Annuler")
         self.button_annuler.clicked.connect(self.controleur.annuler_vente)
+        #add employe
+        self.button_addEmploye = QPushButton("Ajouter Employe")
+        self.button_addEmploye.clicked.connect(self.basculer_vers_add_employe)
+        
         buttons_layout.addWidget(self.button_enregistrer_vente)
         buttons_layout.addWidget(self.button_annuler)
+        
+        buttons_layout.addWidget(self.button_addEmploye)
+        
+        
 
         layout.addLayout(buttons_layout)
 
@@ -123,9 +134,13 @@ class Vue(QMainWindow):
         self.button_formulaire = QPushButton("Formulaire")
         self.button_formulaire.clicked.connect(lambda: self.controleur.action_splash("formulaire"))
 
+
+
         buttons_layout.addWidget(self.button_gestion)
         buttons_layout.addWidget(self.button_options)
         buttons_layout.addWidget(self.button_formulaire)
+
+        
 
         layout.addLayout(buttons_layout)
 
@@ -150,6 +165,10 @@ class Vue(QMainWindow):
         
     def basculer_vers_succursale(self):
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
+        
+    def basculer_vers_add_employe(self):
+        self.stacked_widget.setCurrentWidget(self.frame_add_employe)
+
 
     def obtenir_identifiants(self):
         return self.entry_username.text(), self.entry_password.text()

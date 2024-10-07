@@ -18,7 +18,8 @@ class Controleur:
         if self.modele.verifier_identifiants(username, password):
             #VERIFIER LE ROLE DE L'UTILISATEUR ET LE BASCULER SUR LA PAGE DE SON ROLE
             self.vue.afficher_message("Succès", "Connexion réussie !")
-            self.vue.basculer_vers_gerant_global()
+            self.vue.basculer_vers_add_employe()
+            #self.vue.basculer_vers_gerant_global()
         else:
             self.vue.afficher_message("Erreur", "Nom d'utilisateur ou mot de passe incorrect.")
 
@@ -39,6 +40,7 @@ class Controleur:
             self.vue.afficher_message("Options d'utilisation", "Fonctionnalité non implémentée")
         elif action == "formulaire":
             self.vue.basculer_vers_vente()
+       
 
     def demarrer(self):
         self.vue.show()
