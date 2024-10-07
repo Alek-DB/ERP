@@ -2,7 +2,7 @@ from PySide6.QtWidgets import  QWidget, QPushButton, QHBoxLayout
 from PySide6.QtCore import Qt
 
 class QGerantGlobal(QWidget):
-    def __init__(self):
+    def __init__(self, parent):
         super().__init__()
         
         self.setStyleSheet("QPushButton{padding: 10px; background-color:white; border:2px solid black;}  QPushButton:pressed{background-color:#cacccf;}")
@@ -12,6 +12,9 @@ class QGerantGlobal(QWidget):
         
         # Création des boutons
         button1 = QPushButton("Succursale")
+        
+        button1.clicked.connect(parent.basculer_vers_succursale)
+        
         button2 = QPushButton("Ajout de champ")
         button3 = QPushButton("Règle d'affaire")
 
