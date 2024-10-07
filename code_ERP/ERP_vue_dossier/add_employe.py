@@ -36,7 +36,7 @@ class QAddEmploye(QWidget):
         layout.addWidget(self.nom_input)
         layout.addWidget(QLabel("Poste"))
         layout.addWidget(self.poste_input)
-        layout.addWidget(QLabel("Salaire"))
+        layout.addWidget(QLabel("Salaire par heure"))
         layout.addWidget(self.salaire_input)
         layout.addWidget(QLabel("Date de naissance"))
         layout.addWidget(self.date_naissance_input)
