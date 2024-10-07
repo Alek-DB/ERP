@@ -40,7 +40,6 @@ class QListe(QWidget):
                 for o in obj:
                     o.setFixedWidth(100)
                     o.setMinimumHeight(20)
-                    o.setWordWrap(True)
                     hlayout.addWidget(o)
                     hlayout.addStretch()
                 v_inner_layout.addLayout(hlayout)
@@ -50,8 +49,8 @@ class QListe(QWidget):
         scroll_area.setWidget(scroll_content)
 
         group_box = QGroupBox()
-        group_box.setMinimumWidth(300)
-        group_box.setFixedHeight(300)
+        group_box.setMinimumWidth(500)
+        group_box.setFixedHeight(500)
 
         group_box_layout = QVBoxLayout(group_box)
         group_box_layout.addWidget(scroll_area)
