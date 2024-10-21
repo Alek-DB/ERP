@@ -2,11 +2,12 @@ from PySide6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                                QLabel, QLineEdit, QPushButton, QMessageBox, QGridLayout)
 from PySide6.QtCore import Qt
 import sys
+import sqlite3
 import requests
 from ERP_modele import Modele
 from ERP_vue import Vue
 from ERP_data_base import DatabaseManager
-
+import sqlite3
 class Controleur:
     def __init__(self, db_manager):
         self.db_manager = db_manager
@@ -40,7 +41,8 @@ class Controleur:
             self.vue.afficher_message("Options d'utilisation", "Fonctionnalité non implémentée")
         elif action == "formulaire":
             self.vue.basculer_vers_vente()
-       
+        elif action == "stock":
+            self.vue.basculer_vers_stock()
 
     def demarrer(self):
         self.vue.show()
