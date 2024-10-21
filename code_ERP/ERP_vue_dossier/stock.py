@@ -299,8 +299,9 @@ class QStock(QWidget):
         """Supprimer le produit de la base de données et mettre à jour le tableau."""
         try:
             # Supprimer le produit de la base de données
-            self.conn.execute_update("DELETE FROM Produits WHERE code_produit = ?", (code_produit,))
+            
             self.conn.execute_update("DELETE FROM Stocks WHERE id_produit = (SELECT id_produit FROM Produits WHERE code_produit = ?)", (code_produit,))
+            self.conn.execute_update("DELETE FROM Produits WHERE code_produit = ?", (code_produit,))
 
             # Recharger les données dans le tableau
             self.load_stock_data()
@@ -354,7 +355,6 @@ class QStock(QWidget):
                 """, (quantite, max_qte, restock, new_code_produit))
 
                 self.load_stock_data()
-
 
                 print(f"Produit {nom} mis à jour avec succès.")
             except Exception as e:

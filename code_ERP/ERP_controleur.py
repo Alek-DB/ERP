@@ -9,7 +9,7 @@ from ERP_vue import Vue
 from ERP_data_base import DatabaseManager
 
 class Controleur:
-    def __init__(self, db_manager):
+    def __init__(self, db_manager): 
         self.db_manager = db_manager
         self.modele = Modele(self.db_manager)
         self.vue = Vue(self)
@@ -42,7 +42,10 @@ class Controleur:
             self.vue.basculer_vers_vente()
         elif action == "stock":
             self.vue.basculer_vers_stock()
-
+        elif action == "produit":
+            self.vue.basculer_vers_produit()
+        elif action == "fournisseur":
+            self.vue.basculer_vers_fournisseur()
     def demarrer(self):
         self.vue.show()
         
