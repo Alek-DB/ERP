@@ -8,6 +8,7 @@ from ERP_vue_dossier.add_employe import QAddEmploye
 from ERP_vue_dossier.stock import QStock
 
 from ERP_vue_dossier.ajout_succursale import QAjouterSuccursale
+from ERP_vue_dossier.hr import qHRWindow
 
 # La classe Modele reste inchangée
 
@@ -29,6 +30,7 @@ class Vue(QMainWindow):
         self.frame_succursale = QSuccursale(self)
         self.frame_add_employe = QAddEmploye(self)
         self.frame_ajout_succursale = QAjouterSuccursale(self)
+        self.frame_hr = qHRWindow(self)
 
         self.stacked_widget.addWidget(self.frame_connexion)
         self.stacked_widget.addWidget(self.frame_splash)
@@ -37,6 +39,10 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_greant_global)
         self.stacked_widget.addWidget(self.frame_succursale)
         self.stacked_widget.addWidget(self.frame_add_employe)
+        
+        # HR
+        self.stacked_widget.addWidget(self.frame_hr)
+        
         self.stacked_widget.addWidget(self.frame_ajout_succursale)
 
         # Affichage initial
@@ -104,14 +110,11 @@ class Vue(QMainWindow):
         self.button_enregistrer_vente.clicked.connect(self.controleur.enregistrer_vente)
         self.button_annuler = QPushButton("Annuler")
         self.button_annuler.clicked.connect(self.controleur.annuler_vente)
-        #add employe
-        self.button_addEmploye = QPushButton("Ajouter Employe")
-        self.button_addEmploye.clicked.connect(self.basculer_vers_add_employe)
         
         buttons_layout.addWidget(self.button_enregistrer_vente)
         buttons_layout.addWidget(self.button_annuler)
         
-        buttons_layout.addWidget(self.button_addEmploye)
+       
         
         
 
@@ -145,12 +148,27 @@ class Vue(QMainWindow):
         self.button_formulaire.clicked.connect(lambda: self.controleur.action_splash("formulaire"))
         self.button_formulaire = QPushButton("Stock")
         self.button_formulaire.clicked.connect(lambda: self.controleur.action_splash("stock"))
-
+        
+        # Add employe 
+        self.button_addEmploye = QPushButton("Ajouter Employe")
+        self.button_addEmploye.clicked.connect(self.basculer_vers_add_employe)
+        
+        # HR 
+        
+        self.button_hr = QPushButton("HR")
+        self.button_hr.clicked.connect(self.basculer_vers_hr)
 
 
         buttons_layout.addWidget(self.button_gestion)
         buttons_layout.addWidget(self.button_options)
         buttons_layout.addWidget(self.button_formulaire)
+        
+        # Add employe
+        buttons_layout.addWidget(self.button_addEmploye)
+        
+        # HR
+        
+        buttons_layout.addWidget(self.button_hr)
 
         
 
@@ -178,10 +196,13 @@ class Vue(QMainWindow):
     def basculer_vers_succursale(self):
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
         
+    # Add employe   
     def basculer_vers_add_employe(self):
         self.stacked_widget.setCurrentWidget(self.frame_add_employe)
 
-
+    # HR fenetre
+    def basculer_vers_hr(self):
+        self.stacked_widget.setCurrentWidget(self.frame_hr)
         
     def basculer_vers_gerant_global(self):
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)

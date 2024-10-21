@@ -14,6 +14,40 @@ class Employe:
         self.allergies = allergies
         self.code_unique = code_unique
         self.role = role
+    
+     # Méthodes pour modifier chaque attribut
+    def modifier_prenom(self, prenom):
+        self.prenom = prenom
+
+    def modifier_nom(self, nom):
+        self.nom = nom
+
+    def modifier_poste(self, poste):
+        self.poste = poste
+
+    def modifier_salaire(self, salaire):
+        self.salaire = salaire
+
+    def modifier_date_naissance(self, date_naissance):
+        self.date_naissance = date_naissance
+
+    def modifier_date_embauche(self, date_embauche):
+        self.date_embauche = date_embauche
+
+    def modifier_sexe(self, sexe):
+        self.sexe = sexe
+
+    def modifier_statut(self, statut):
+        self.statut = statut
+
+    def modifier_allergies_preferences(self, allergies_preferences):
+        self.allergies_preferences_alimentaires = allergies_preferences
+
+    def modifier_code_unique(self, code_unique):
+        self.code_unique = code_unique
+
+    def modifier_role(self, role):
+        self.role = role  # Méthode pour modifier le rôle
 
     def add_to_db(self):
         dao = EmployeDAO()

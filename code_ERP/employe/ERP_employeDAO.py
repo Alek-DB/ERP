@@ -1,6 +1,9 @@
+from ERP_data_base import DatabaseManager
+
 class EmployeDAO:
-    def __init__(self, db_path='erp_database.db'):
-        self.db_manager = DatabaseManager(db_path)
+    def __init__(self):
+        self.db_manager = DatabaseManager()    
+        
 
     def get_employe_by_id(self, id_employe):
         query = "SELECT * FROM Employes WHERE id_employe = ?"
@@ -31,7 +34,8 @@ class EmployeDAO:
         )
         rows_affected = self.db_manager.execute_update(query, parameters)
         return rows_affected > 0
-
+    
+    
     def update_employe(self, employe_data):
         query = """
         UPDATE Employes SET nom = ?, prenom = ?, poste = ?, salaire = ?, date_naissance = ?, 
