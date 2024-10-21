@@ -162,6 +162,7 @@ class Vue(QMainWindow):
         
     def basculer_vers_succursale(self):
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
+
         
     def basculer_vers_gerant_global(self):
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
@@ -172,6 +173,7 @@ class Vue(QMainWindow):
         else:
             self.frame_ajout_succursale.set_to_modif()
         self.stacked_widget.setCurrentWidget(self.frame_ajout_succursale)
+
 
     def obtenir_identifiants(self):
         return self.entry_username.text(), self.entry_password.text()

@@ -355,6 +355,7 @@ class DatabaseManager:
 
     def __del__(self):
         self.close_connection()
+
         
         
     def get_all_stocks(self):
@@ -364,6 +365,11 @@ class DatabaseManager:
         JOIN Produits ON Stocks.id_produit = Produits.id_produit
         """
         return self.execute_query(query)
+
+    
+    def get_column_names(self):
+        return [description[0] for description in self.cursor.description]
+
 
 
 
