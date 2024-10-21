@@ -1,5 +1,5 @@
 from PySide6.QtWidgets import (
-    QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QGridLayout, QLineEdit, QDialog, QComboBox
+    QTableWidget, QTableWidgetItem,QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QSpacerItem, QSizePolicy, QLabel, QGridLayout, QLineEdit, QDialog, QComboBox
 )
 from PySide6.QtCore import Qt
 
@@ -86,44 +86,33 @@ class QSuccursale(QWidget):
         if self.liste_widget:
             self.liste_widget.deleteLater()  # Supprime l'ancienne liste
 
-        layout_list = []
-        section_names = ["Nom", "Adresse", "Code"]
-
         try:
             db_manager = DatabaseManager('erp_database.db')
             query = "SELECT * FROM Succursales"
             results = db_manager.execute_query(query, ())
-            print(results.count)
+    
+            self.liste_widget = QTableWidget()
+            self.liste_widget.setGeometry(600,600)
+            self.liste_widget.setColumnCount(3)
+            self.liste_widget.setHorizontalHeaderLabels(["Nom", "Adresse", "Code"])
 
-            for row in results:
+            self.liste_widget.setRowCount(len(results))
+            for i,row in enumerate(results):
                 _nom = row['nom']
                 _adresse = row['adresse']
                 _code = row["code"]
+                
+                self.liste_widget.setItem(i, 0, QTableWidgetItem(_nom))
+                self.liste_widget.setItem(i, 1, QTableWidgetItem(_adresse))
+                self.liste_widget.setItem(i, 2, QTableWidgetItem(_code))
 
-                layout_obj = []
-                nom_button = QPushButton(_nom)
-                nom_button.clicked.connect(self.handle_button_click)
-                layout_obj.append(nom_button)
+                #nom_button.clicked.connect(self.handle_button_click)
 
-                addresse_label = QLabel(_adresse)
-                layout_obj.append(addresse_label)
-
-                code_label = QLabel(_code)
-                layout_obj.append(code_label)
-
-                layout_list.append(layout_obj)
-
-            self.liste_widget = QListe("Liste de succursale", layout_list, section_names)
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
 
         self.main_layout.addWidget(self.liste_widget, alignment=Qt.AlignCenter)
         
-        
-
-
-
-
 
 class AddModifyDialog(QDialog):
     def __init__(self, parent):
@@ -157,12 +146,7 @@ class AddModifyDialog(QDialog):
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {type(e).__name__} - {e}")
         
-        
-        
-        
-        
-        
-        
+ 
         self.setWindowTitle("Ajouter")
         # Create the layout
         layout = QGridLayout()
