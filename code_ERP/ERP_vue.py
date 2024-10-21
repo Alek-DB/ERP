@@ -11,7 +11,6 @@ from ERP_vue_dossier.stock import QStock
 
 # La classe Modele reste inchangée
 
-from ERP_vue_dossier.ajout_succursale import QAjouterSuccursale
 from ERP_vue_dossier.produit import QProduit
 from ERP_vue_dossier.fournisseur import QFournisseur
 
@@ -34,8 +33,6 @@ class Vue(QMainWindow):
         self.frame_splash = self.creer_frame_splash()
         self.frame_greant_global = QGerantGlobal(self)
         self.frame_succursale = QSuccursale(self)
-
-        self.frame_ajout_succursale = QAjouterSuccursale(self)
         self.frame_fournisseur = QFournisseur(self, self.controleur.db_manager)
 
         # Ajout des frames au QStackedWidget
@@ -47,7 +44,6 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_succursale)
 
 
-        self.stacked_widget.addWidget(self.frame_ajout_succursale)
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
 
