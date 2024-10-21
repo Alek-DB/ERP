@@ -10,9 +10,18 @@ from ERP_data_base import DatabaseManager
 
 
 class AddModifyDialog(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, mode="Ajouter", product_data=None):
+        """
+        Initialise le dialogue pour ajouter ou modifier un produit.
+
+        :param parent: La fenêtre parente
+        :param mode: "Ajouter" ou "Modifier" pour déterminer le comportement du dialogue
+        :param product_data: Les données du produit à modifier (None si on ajoute un produit)
+        """
         super().__init__(parent)
-        self.setWindowTitle("Ajouter")
+        self.mode = mode
+        self.product_data = product_data
+        self.setWindowTitle(self.mode)
 
         # Create the layout
         layout = QGridLayout()
@@ -28,10 +37,10 @@ class AddModifyDialog(QDialog):
             layout.addWidget(input_field, i, 1)
             self.inputs[label] = input_field
 
-        # Buttons for 'Ajouter' and 'Annuler'
-        self.add_button = QPushButton("Ajouter")
+        # Buttons for 'Ajouter/Modifier' and 'Annuler'
+        self.add_button = QPushButton(self.mode)
         self.cancel_button = QPushButton("Annuler")
-        
+
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.add_button)
         button_layout.addWidget(self.cancel_button)
@@ -43,9 +52,27 @@ class AddModifyDialog(QDialog):
 
         # Connect cancel button to close the dialog
         self.cancel_button.clicked.connect(self.close)
-        self.add_button.clicked.connect(self.add_product)
-        
-        
+
+        # Pre-fill the inputs if in modify mode
+        if self.mode == "Modifier" and self.product_data:
+            self.fill_inputs()
+
+        # Connect add/modify button to the appropriate method
+        if self.mode == "Ajouter":
+            self.add_button.clicked.connect(self.add_product)
+        else:
+            self.add_button.clicked.connect(self.modify_product)
+
+    def fill_inputs(self):
+        """Pré-remplir les champs avec les données du produit existant pour la modification."""
+        if self.product_data:
+            self.inputs["Nom"].setText(self.product_data['nom'])
+            self.inputs["Code Produit"].setText(self.product_data['code_produit'])
+            self.inputs["Max"].setText(str(self.product_data['qte_max']))
+            self.inputs["Quantité"].setText(str(self.product_data['qte_actuelle']))
+            self.inputs["nb Restock"].setText(str(self.product_data['restock']))
+            self.inputs["Prix"].setText(str(self.product_data['prix']))
+
     def add_product(self):
         """Valider les champs et ajouter le produit dans la base de données."""
         # Récupérer les valeurs des champs de saisie
@@ -58,7 +85,6 @@ class AddModifyDialog(QDialog):
 
         # Vérifier que tous les champs sont remplis
         if not (nom and code_produit and qte_max and qte_actuelle and restock and prix):
-            # Ajouter une validation simple
             print("Tous les champs doivent être remplis.")
             return
 
@@ -75,6 +101,38 @@ class AddModifyDialog(QDialog):
         # Appeler la méthode de la classe parente pour insérer les données
         self.parent().add_new_product(nom, code_produit, qte_max, qte_actuelle, restock, prix)
         self.close()
+
+    def modify_product(self):
+        """Valider les champs et modifier le produit dans la base de données."""
+        # Récupérer les valeurs des champs de saisie
+        nom = self.inputs["Nom"].text()
+        code_produit = self.inputs["Code Produit"].text()
+        qte_max = self.inputs["Max"].text()
+        qte_actuelle = self.inputs["Quantité"].text()
+        restock = self.inputs["nb Restock"].text()
+        prix = self.inputs["Prix"].text()
+
+        # Vérifier que tous les champs sont remplis
+        if not (nom and code_produit and qte_max and qte_actuelle and restock and prix):
+            print("Tous les champs doivent être remplis.")
+            return
+
+        # Vérifier que les valeurs numériques sont valides
+        try:
+            qte_max = int(qte_max)
+            qte_actuelle = int(qte_actuelle)
+            restock = int(restock)
+            prix = float(prix)
+        except ValueError:
+            print("Erreur : Quantité, Restock et Prix doivent être des nombres valides.")
+            return
+
+        # Appeler la méthode de la classe parente pour mettre à jour les données
+        self.parent().update_product(self.product_data['code_produit'], nom, code_produit, qte_max, qte_actuelle, restock, prix)
+        self.close()
+
+        
+    
         
         
 class QStock(QWidget):
@@ -82,8 +140,8 @@ class QStock(QWidget):
         super().__init__()
         
         #set database
-        self.conn = sqlite3.connect("erp_database.db")
-        self.cursor = self.conn.cursor()
+        self.conn = DatabaseManager('erp_database.db')
+        #self.cursor = self.conn.cursor()
 
         # Create the main layout
         stock_layout = QGridLayout()
@@ -152,13 +210,15 @@ class QStock(QWidget):
         
     def load_stock_data(self):
         """Charger les données des produits et du stock depuis la base de données."""
+        #rows = self.db_manager.get_all_stocks()
+
         query = """
             SELECT p.nom_produit, p.code_produit, s.qte_max, s.qte_actuelle, s.qte_min_restock, p.prix
             FROM Stocks s
             JOIN Produits p ON s.id_produit = p.id_produit
         """
-        self.cursor.execute(query)
-        rows = self.cursor.fetchall()
+        
+        rows = self.conn.execute_query(query)
 
         # Ajouter les données dans le tableau
         self.stock_table.setRowCount(len(rows))
@@ -168,9 +228,9 @@ class QStock(QWidget):
 
 
     def add_item(self):
-        # Open the Add/Modify dialog
-        dialog = AddModifyDialog(self)
+        dialog = AddModifyDialog(self, mode="Ajouter")
         dialog.exec_()
+
         
     def add_new_product(self, nom, code_produit, qte_max, qte_actuelle, restock, prix):
         """Insérer un nouveau produit dans la base de données et le tableau."""
@@ -179,24 +239,26 @@ class QStock(QWidget):
             print(nom, code_produit, qte_max, qte_actuelle, restock, prix)
             
             # Insérer les données dans la table Produits
-            self.cursor.execute("""
+            self.conn.execute_update("""
                 INSERT INTO Produits (nom_produit, code_produit, prix)
                 VALUES (?, ?, ?)
             """, (nom, code_produit, prix))
-            produit_id = self.cursor.lastrowid
             
+            
+            query = "SELECT * FROM Produits WHERE code_produit = ?"
+            result = self.conn.execute_query(query, (code_produit,))
 
+            #print(result["id_produit"])
             # Insérer les données dans la table Stocks
-            self.cursor.execute("""
+            self.conn.execute_update("""
                 INSERT INTO Stocks (id_produit, qte_actuelle, qte_max, qte_min_restock)
                 VALUES (?, ?, ?, ?)
-            """, (produit_id, qte_actuelle, qte_max, restock))
-            self.conn.commit()
+            """, (result[0]["id_produit"], qte_actuelle, qte_max, restock))
 
             # Recharger les données dans le tableau
             self.load_stock_data()
-        except sqlite3.IntegrityError:
-            print("Erreur : Le produit avec ce code existe déjà.")
+        except sqlite3.Error as e:
+            print(f"Erreur {e}")
 
     def remove_item(self):
         """Activer le mode sélection pour supprimer un produit."""
@@ -237,9 +299,9 @@ class QStock(QWidget):
         """Supprimer le produit de la base de données et mettre à jour le tableau."""
         try:
             # Supprimer le produit de la base de données
-            self.cursor.execute("DELETE FROM Produits WHERE code_produit = ?", (code_produit,))
-            self.cursor.execute("DELETE FROM Stocks WHERE id_produit = (SELECT id_produit FROM Produits WHERE code_produit = ?)", (code_produit,))
-            self.conn.commit()
+            
+            self.conn.execute_update("DELETE FROM Stocks WHERE id_produit = (SELECT id_produit FROM Produits WHERE code_produit = ?)", (code_produit,))
+            self.conn.execute_update("DELETE FROM Produits WHERE code_produit = ?", (code_produit,))
 
             # Recharger les données dans le tableau
             self.load_stock_data()
@@ -250,8 +312,54 @@ class QStock(QWidget):
             print(f"Erreur lors de la suppression du produit: {e}")
 
     def modify_item(self):
-        # Code to modify the selected item in the stock
-        print("Modify item clicked")
-        # Add logic to modify the selected row
+        """Activer le mode sélection pour modifier un produit."""
+        # Activer la sélection dans le tableau
+        self.stock_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.stock_table.setSelectionMode(QTableWidget.SingleSelection)
+        
+        # Connecter l'événement de clic à la méthode `open_modify_dialog`
+        self.stock_table.itemClicked.connect(self.open_modify_dialog)
+
+    def open_modify_dialog(self, item):
+        row = item.row()
+
+        # Récupérer les informations du produit dans la ligne sélectionnée
+        product_data = {
+            'nom': self.stock_table.item(row, 0).text(),
+            'code_produit': self.stock_table.item(row, 1).text(),
+            'qte_max': int(self.stock_table.item(row, 2).text()),
+            'qte_actuelle': int(self.stock_table.item(row, 3).text()),
+            'restock': int(self.stock_table.item(row, 4).text()),
+            'prix': float(self.stock_table.item(row, 5).text())
+        }
+
+        # Ouvrir le dialogue en mode modification
+        dialog = AddModifyDialog(self, mode="Modifier", product_data=product_data)
+        dialog.exec_()
+        
+    def update_product(self, old_code_produit, nom, new_code_produit, max_qte, quantite, restock, prix):
+            """Mettre à jour le produit dans la base de données."""
+            try:
+                # Mettre à jour la table Produits
+                self.conn.execute_update("""
+                    UPDATE Produits
+                    SET nom_produit = ?, code_produit = ?, prix = ?
+                    WHERE code_produit = ?
+                """, (nom, new_code_produit, prix, old_code_produit))
+
+                # Mettre à jour la table Stocks
+                self.conn.execute_update("""
+                    UPDATE Stocks
+                    SET qte_actuelle = ?, qte_max = ?, qte_min_restock = ?
+                    WHERE id_produit = (SELECT id_produit FROM Produits WHERE code_produit = ?)
+                """, (quantite, max_qte, restock, new_code_produit))
+
+                self.load_stock_data()
+
+                print(f"Produit {nom} mis à jour avec succès.")
+            except Exception as e:
+                print(f"Erreur lors de la mise à jour du produit: {e}")
+
+
         
 

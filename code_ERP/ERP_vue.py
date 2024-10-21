@@ -179,6 +179,9 @@ class Vue(QMainWindow):
 
     def basculer_vers_succursale(self):
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
+<<<<<<< HEAD
+        
+=======
 
 
 
@@ -186,6 +189,7 @@ class Vue(QMainWindow):
     def basculer_vers_produit(self):
         self.stacked_widget.setCurrentWidget(self.frame_produit)
 
+>>>>>>> a52582001cd5d8ae733eb36818ecd9b2d2e3b712
     def basculer_vers_gerant_global(self):
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
 
@@ -196,11 +200,14 @@ class Vue(QMainWindow):
             self.frame_ajout_succursale.set_to_modif()
         self.stacked_widget.setCurrentWidget(self.frame_ajout_succursale)
 
+<<<<<<< HEAD
+=======
 
     def basculer_vers_fournisseur(self):
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur)
 
     # Méthodes pour obtenir les informations saisies par l'utilisateur
+>>>>>>> a52582001cd5d8ae733eb36818ecd9b2d2e3b712
     def obtenir_identifiants(self):
         return self.entry_username.text(), self.entry_password.text()
 
