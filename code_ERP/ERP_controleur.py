@@ -46,6 +46,9 @@ class Controleur:
             self.vue.basculer_vers_produit()
         elif action == "fournisseur":
             self.vue.basculer_vers_fournisseur()
+        elif action == "succursale":
+            self.vue.basculer_vers_succursale()
+            
     def demarrer(self):
         self.vue.show()
         

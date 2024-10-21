@@ -147,7 +147,8 @@ class Vue(QMainWindow):
         self.button_produit.clicked.connect(lambda: self.controleur.action_splash("produit"))
         self.button_fournisseur = QPushButton("Fournisseur")
         self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("fournisseur"))
-
+        self.button_fournisseur = QPushButton("Succursale")
+        self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("succursale"))
         buttons_layout.addWidget(self.button_gestion)
         buttons_layout.addWidget(self.button_options)
         buttons_layout.addWidget(self.button_formulaire)
@@ -179,35 +180,18 @@ class Vue(QMainWindow):
 
     def basculer_vers_succursale(self):
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
-<<<<<<< HEAD
-        
-=======
-
-
-
 
     def basculer_vers_produit(self):
         self.stacked_widget.setCurrentWidget(self.frame_produit)
-
->>>>>>> a52582001cd5d8ae733eb36818ecd9b2d2e3b712
+        
     def basculer_vers_gerant_global(self):
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
-
-    def basculer_vers_ajout_succursale(self, ajout):
-        if ajout:
-            self.frame_ajout_succursale.set_to_ajout()
-        else:
-            self.frame_ajout_succursale.set_to_modif()
-        self.stacked_widget.setCurrentWidget(self.frame_ajout_succursale)
-
-<<<<<<< HEAD
-=======
 
     def basculer_vers_fournisseur(self):
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur)
 
     # Méthodes pour obtenir les informations saisies par l'utilisateur
->>>>>>> a52582001cd5d8ae733eb36818ecd9b2d2e3b712
+
     def obtenir_identifiants(self):
         return self.entry_username.text(), self.entry_password.text()
 

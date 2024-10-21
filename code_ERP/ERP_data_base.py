@@ -371,6 +371,10 @@ class DatabaseManager:
     def __del__(self):
         self.close_connection()
         
+    def get_column_names(self):
+        """Retourne les noms des colonnes d'un curseur SQLite."""
+        return [description[0] for description in self.cursor.description]
+        
         
     def get_all_stocks(self):
         query = """
