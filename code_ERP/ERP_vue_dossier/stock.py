@@ -2,7 +2,7 @@ import sys
 import sqlite3
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QPushButton, QLabel, QLineEdit, QTableWidget, 
-    QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QGridLayout, QDialog
+    QTableWidgetItem, QVBoxLayout, QHBoxLayout, QWidget, QGridLayout, QDialog, QMessageBox
 )
 from PySide6.QtCore import Qt
 
@@ -199,9 +199,55 @@ class QStock(QWidget):
             print("Erreur : Le produit avec ce code existe déjà.")
 
     def remove_item(self):
-        # Code to remove the selected item from the stock
-        print("Remove item clicked")
-        # Add logic to remove selected row from the table
+        """Activer le mode sélection pour supprimer un produit."""
+        # Activer la sélection dans le tableau
+        self.stock_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.stock_table.setSelectionMode(QTableWidget.SingleSelection)
+        
+        # Connecter l'événement de clic à la méthode `confirm_deletion`
+        self.stock_table.itemClicked.connect(self.confirm_deletion)
+
+    def confirm_deletion(self, item):
+        """Demander confirmation avant de supprimer un élément."""
+        # Obtenir la ligne de l'élément sélectionné
+        row = item.row()
+
+        # Récupérer les informations du produit dans la ligne sélectionnée
+        nom_produit = self.stock_table.item(row, 0).text()
+        code_produit = self.stock_table.item(row, 1).text()
+
+        # Boîte de dialogue de confirmation
+        confirmation_dialog = QMessageBox()
+        confirmation_dialog.setWindowTitle("Confirmer la suppression")
+        confirmation_dialog.setText(f"Voulez-vous vraiment supprimer le produit '{nom_produit}' (Code: {code_produit}) ?")
+        confirmation_dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        confirmation_dialog.setIcon(QMessageBox.Warning)
+
+        # Si l'utilisateur confirme la suppression
+        if confirmation_dialog.exec_() == QMessageBox.Yes:
+            self.delete_product(code_produit)
+        else:
+            # Annuler la sélection si l'utilisateur ne veut pas supprimer
+            self.stock_table.clearSelection()
+
+        # Désactiver la connexion à l'événement après la suppression ou l'annulation
+        self.stock_table.itemClicked.disconnect()
+
+    def delete_product(self, code_produit):
+        """Supprimer le produit de la base de données et mettre à jour le tableau."""
+        try:
+            # Supprimer le produit de la base de données
+            self.cursor.execute("DELETE FROM Produits WHERE code_produit = ?", (code_produit,))
+            self.cursor.execute("DELETE FROM Stocks WHERE id_produit = (SELECT id_produit FROM Produits WHERE code_produit = ?)", (code_produit,))
+            self.conn.commit()
+
+            # Recharger les données dans le tableau
+            self.load_stock_data()
+
+            # Message de confirmation
+            print(f"Le produit avec le code {code_produit} a été supprimé.")
+        except Exception as e:
+            print(f"Erreur lors de la suppression du produit: {e}")
 
     def modify_item(self):
         # Code to modify the selected item in the stock
