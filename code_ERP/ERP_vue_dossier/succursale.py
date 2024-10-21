@@ -10,40 +10,15 @@ from ERP_data_base import DatabaseManager
 
 
 class AddModifyDialog(QDialog):
-    def __init__(self, parent):
+    def __init__(self, parent, mode="Ajouter", product_data=None):
         super().__init__()
         
         self.succursale = parent
-        
-        #CREER UN EMPLOYÉ
-        try:
-            # Vérifier si la table est vide
-            db_manager = DatabaseManager('erp_database.db')
-            check_query = "SELECT COUNT(*) FROM Employes"
-            result = db_manager.execute_query(check_query)
-            count = result[0][0]  # Récupérer le nombre d'employés
-
-            if count == 0:
-                # Ajouter un nouvel employé
-                insert_query = """
-                INSERT INTO Employes (nom, prenom, poste) VALUES (?, ?, ?)
-                """
-                parameters = ("Dupont", "Jean", "Développeur")  # Remplacez par les valeurs souhaitées
-                rows_affected = db_manager.execute_update(insert_query, parameters)
-
-
-                if rows_affected > 0:
-                    print("Un nouvel employé a été ajouté avec succès.")
-                else:
-                    print("Aucun employé n'a été ajouté.")
-            else:
-                print("La table n'est pas vide. Aucun employé n'a été ajouté.")
-
-        except sqlite3.Error as e:
-            print(f"Une erreur est survenue : {type(e).__name__} - {e}")
+        self.mode = mode
+        self.product_data = product_data
         
  
-        self.setWindowTitle("Ajouter")
+        self.setWindowTitle(self.mode)
         # Create the layout
         layout = QGridLayout()
 
@@ -75,7 +50,7 @@ class AddModifyDialog(QDialog):
             self.inputs[label] = input_field
 
         # Buttons for 'Ajouter/Modifier' and 'Annuler'
-        self.add_modify_button = QPushButton("Ajouter")
+        self.add_modify_button = QPushButton(self.mode)
         self.cancel_button = QPushButton("Annuler")
         
         button_layout = QHBoxLayout()
@@ -86,12 +61,47 @@ class AddModifyDialog(QDialog):
 
         # Set the layout
         self.setLayout(layout)
+        
+        
+        if self.mode == "Modifier" and self.product_data:
+            self.fill_inputs()
 
         # Connect cancel button to close the dialog
         self.cancel_button.clicked.connect(self.close)
-        self.add_modify_button.clicked.connect(self.enregistrer)
+        if self.mode == "Ajouter":
+            self.add_modify_button.clicked.connect(self.enregistrer)
+        else:
+            self.add_modify_button.clicked.connect(self.modify_product)
         
         
+    def fill_inputs(self):
+        if self.product_data:
+            self.inputs["nom"].setText(self.product_data['nom'])
+            self.inputs["adresse"].setText(self.product_data['adresse'])
+            self.inputs["code"].setText(str(self.product_data['code']))
+            self.inputs["gerant"].setText(str(self.product_data['gerant']))
+            self.inputs["statut"].setCurrentText(str(self.product_data['statut']))
+            self.inputs["telephone"].setText(str(self.product_data['telephone']))
+
+    
+    def modify_product(self):
+        # Récupérer les valeurs des champs de saisie
+        nom = self.inputs["nom"].text()
+        code_succursale = self.inputs["code"].text()
+        adresse = self.inputs["adresse"].text()
+        gerant = self.inputs["gerant"].text()
+        statut = self.inputs["statut"].currentText()
+        telephone = self.inputs["telephone"].text()
+
+        # Vérifier que tous les champs sont remplis
+        if not (nom and code_succursale and adresse and gerant and statut and telephone):
+            print("Tous les champs doivent être remplis.")
+            return
+
+        # Appeler la méthode de la classe parente pour mettre à jour les données
+        self.succursale.update_product(self.product_data['code'], nom, code_succursale, adresse, gerant, statut, telephone)
+        self.close()
+    
     def enregistrer(self):
         """Récupérer les valeurs des champs et les enregistrer dans la base de données."""
         values = {
@@ -207,11 +217,8 @@ class QSuccursale(QWidget):
         dialog.exec_()
         
     def remove_item(self):
-        # Activer la sélection dans le tableau
         self.succursale_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.succursale_table.setSelectionMode(QTableWidget.SingleSelection)
-        
-        # Connecter l'événement de clic à la méthode `confirm_deletion`
         self.succursale_table.itemClicked.connect(self.confirm_deletion)
 
     def confirm_deletion(self, item):
@@ -246,14 +253,46 @@ class QSuccursale(QWidget):
             query = "DELETE FROM Succursales WHERE code = ?"
             db_manager.execute_query(query, (code_succursale,))
 
-            # Message de confirmation
             print(f"La succursale avec le code {code_succursale} a été supprimé.")
         except Exception as e:
             print(f"Erreur lors de la suppression de la succursale: {e}") 
 
     def modify_item(self):
-        # Code to modify the selected item in the stock
-        print("Modify item clicked")
-        # Add logic to modify the selected row
+        self.succursale_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.succursale_table.setSelectionMode(QTableWidget.SingleSelection)
+        self.succursale_table.itemClicked.connect(self.open_modify_dialog)
         
+    def open_modify_dialog(self, item):
+        row = item.row()
+        
+        product_data = {
+            'nom': self.succursale_table.item(row, 0).text(),
+            'adresse': self.succursale_table.item(row, 1).text(),
+            'code': self.succursale_table.item(row, 2).text(),
+            'gerant': self.succursale_table.item(row, 3).text(),
+            'statut': self.succursale_table.item(row, 4).text(),
+            'telephone': self.succursale_table.item(row, 5).text(),
+            'date_ouverture': self.succursale_table.item(row, 6).text()
+        }
+
+        # Ouvrir le dialogue en mode modification
+        dialog = AddModifyDialog(self, mode="Modifier", product_data=product_data)
+        dialog.exec_()
+       
+
+    def update_product(self, old_code_succursale, nom, new_code_succursale, adresse, gerant, statut, telephone):
+
+            try:
+                self.db_manager.execute_update("""
+                    UPDATE Succursales
+                    SET nom = ?, code = ?, adresse = ?, gerant = ?, statut = ?, telephone = ?
+                    WHERE code = ?
+                """, (nom, new_code_succursale, adresse, gerant, statut, telephone, old_code_succursale))
+
+                self.load_succursale()
+
+
+                print(f"Succursale {nom} mis à jour avec succès.")
+            except Exception as e:
+                print(f"Erreur lors de la mise à jour de la succursale: {e}")
 

@@ -9,7 +9,7 @@ from ERP_vue import Vue
 from ERP_data_base import DatabaseManager
 import sqlite3
 class Controleur:
-    def __init__(self, db_manager):
+    def __init__(self, db_manager): 
         self.db_manager = db_manager
         self.modele = Modele(self.db_manager)
         self.vue = Vue(self)
