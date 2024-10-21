@@ -6,8 +6,6 @@ from ERP_vue_dossier.gerant_global import QGerantGlobal
 from ERP_vue_dossier.succursale import QSuccursale
 from ERP_vue_dossier.stock import QStock
 
-from ERP_vue_dossier.ajout_succursale import QAjouterSuccursale
-
 # La classe Modele reste inchangée
 
 class Vue(QMainWindow):
@@ -26,7 +24,6 @@ class Vue(QMainWindow):
         self.frame_splash = self.creer_frame_splash()
         self.frame_greant_global = QGerantGlobal(self)
         self.frame_succursale = QSuccursale(self)
-        self.frame_ajout_succursale = QAjouterSuccursale(self)
 
         self.stacked_widget.addWidget(self.frame_connexion)
         self.stacked_widget.addWidget(self.frame_splash)
@@ -34,7 +31,6 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_stock)
         self.stacked_widget.addWidget(self.frame_greant_global)
         self.stacked_widget.addWidget(self.frame_succursale)
-        self.stacked_widget.addWidget(self.frame_ajout_succursale)
 
         # Affichage initial
         self.basculer_vers_connexion()
@@ -167,12 +163,6 @@ class Vue(QMainWindow):
     def basculer_vers_gerant_global(self):
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
     
-    def basculer_vers_ajout_succursale(self, ajout):
-        if ajout:
-            self.frame_ajout_succursale.set_to_ajout()
-        else:
-            self.frame_ajout_succursale.set_to_modif()
-        self.stacked_widget.setCurrentWidget(self.frame_ajout_succursale)
 
 
     def obtenir_identifiants(self):
