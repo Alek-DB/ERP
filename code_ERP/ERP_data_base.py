@@ -36,7 +36,8 @@ class DatabaseManager:
             sexe TEXT CHECK(sexe IN ('M', 'F')),
             statut TEXT,
             allergies_preferences_alimentaires TEXT,
-            code_unique TEXT
+            code_unique TEXT,
+            mot_de_passe TEXT NOT NULL
         )
         """)
 

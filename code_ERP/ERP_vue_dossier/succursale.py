@@ -137,8 +137,13 @@ class AddModifyDialog(QDialog):
 
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
-        
+            
         self.close()
+        
+    def closeEvent(self, event):
+        self.succursale.modify_button.setStyleSheet("background-color: ;")
+        self.succursale.succursale_table.itemClicked.disconnect()
+
         
         
         
@@ -146,6 +151,7 @@ class QSuccursale(QWidget):
     def __init__(self, parent):
         super().__init__()
         
+        self.vue = parent
         #set database
         self.db_manager = DatabaseManager('erp_database.db')
 
@@ -154,15 +160,17 @@ class QSuccursale(QWidget):
 
         # Left-side buttons layout (Ajouter, Retirer, Modifier, etc.)
         add_button = QPushButton("Ajouter")
-        remove_button = QPushButton("Retirer")
-        modify_button = QPushButton("Modifier")
+        self.remove_button = QPushButton("Retirer")
+        self.modify_button = QPushButton("Modifier")
+        self.open_button = QPushButton("Ouvrir")
         back_button = QPushButton("<-")
 
         button_layout = QVBoxLayout()
         button_layout.addWidget(back_button)
         button_layout.addWidget(add_button)
-        button_layout.addWidget(remove_button)
-        button_layout.addWidget(modify_button)
+        button_layout.addWidget(self.remove_button)
+        button_layout.addWidget(self.modify_button)
+        button_layout.addWidget(self.open_button)
 
         # Add button layout to the grid
         succursale_layout.addLayout(button_layout, 0, 0)
@@ -182,21 +190,23 @@ class QSuccursale(QWidget):
         succursale_layout.addLayout(search_layout, 1, 1)
 
         self.succursale_table = QTableWidget()
+        self.succursale_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.succursale_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.succursale_table.setSelectionMode(QTableWidget.SingleSelection)
+        self.modify_item()
         self.succursale_table.setColumnCount(7)
         self.setLayout(succursale_layout)
         self.load_succursale()
 
         # Add table to layout
         succursale_layout.addWidget(self.succursale_table, 2, 1)
-
-        # Set central widget
-    
-
+        
         # Connect button actions to methods
         add_button.clicked.connect(self.add_item)
-        remove_button.clicked.connect(self.remove_item)
-        modify_button.clicked.connect(self.modify_item)
-        back_button.clicked.connect(parent.basculer_vers_gerant_global)
+        self.remove_button.clicked.connect(self.remove_item)
+        self.modify_button.clicked.connect(self.modify_item)
+        self.open_button.clicked.connect(self.open_succursale)
+        back_button.clicked.connect(self.vue.basculer_before)
              
     def load_succursale(self):
         try:
@@ -219,8 +229,10 @@ class QSuccursale(QWidget):
         dialog.exec_()
         
     def remove_item(self):
-        self.succursale_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.succursale_table.setSelectionMode(QTableWidget.SingleSelection)
+        self.succursale_table.itemClicked.disconnect()
+        self.remove_button.setStyleSheet("background-color: red;")
+        self.modify_button.setStyleSheet("background-color: ;")
+        self.open_button.setStyleSheet("background-color: ;")
         self.succursale_table.itemClicked.connect(self.confirm_deletion)
 
     def confirm_deletion(self, item):
@@ -247,6 +259,7 @@ class QSuccursale(QWidget):
 
         # Désactiver la connexion à l'événement après la suppression ou l'annulation
         self.succursale_table.itemClicked.disconnect()
+        self.remove_button.setStyleSheet("background-color: ;")
         self.load_succursale()
 
     def delete_succursale(self, code_succursale):
@@ -260,8 +273,10 @@ class QSuccursale(QWidget):
             print(f"Erreur lors de la suppression de la succursale: {e}") 
 
     def modify_item(self):
-        self.succursale_table.setSelectionBehavior(QTableWidget.SelectRows)
-        self.succursale_table.setSelectionMode(QTableWidget.SingleSelection)
+        self.succursale_table.itemClicked.disconnect()
+        self.modify_button.setStyleSheet("background-color: lightgreen;")
+        self.remove_button.setStyleSheet("background-color: ;")
+        self.open_button.setStyleSheet("background-color: ;")
         self.succursale_table.itemClicked.connect(self.open_modify_dialog)
         
     def open_modify_dialog(self, item):
@@ -281,6 +296,15 @@ class QSuccursale(QWidget):
         dialog = AddModifyDialog(self, mode="Modifier", product_data=product_data)
         dialog.exec_()
        
+    def open_succursale(self):
+        self.succursale_table.itemClicked.disconnect()
+        self.open_button.setStyleSheet("background-color: blue;")
+        self.remove_button.setStyleSheet("background-color: ;")
+        self.modify_button.setStyleSheet("background-color: ;")
+        self.succursale_table.itemClicked.connect(self.go_to)
+        
+    def go_to(self, item):
+        self.vue.basculer_vers_gerant(self.succursale_table.item(item.row(), 2).text())
 
     def update_product(self, old_code_succursale, nom, new_code_succursale, adresse, gerant, statut, telephone):
 

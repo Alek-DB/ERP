@@ -8,6 +8,8 @@ from PySide6.QtCore import Qt
 from ERP_vue_dossier.gerant_global import QGerantGlobal
 from ERP_vue_dossier.succursale import QSuccursale
 from ERP_vue_dossier.stock import QStock
+from ERP_vue_dossier.gerant import QGerant
+from ERP_emplacement import Emplacement
 
 # La classe Modele reste inchangée
 
@@ -34,6 +36,7 @@ class Vue(QMainWindow):
         self.frame_greant_global = QGerantGlobal(self)
         self.frame_succursale = QSuccursale(self)
         self.frame_fournisseur = QFournisseur(self, self.controleur.db_manager)
+        self.frame_gerant = QGerant(self)
 
         # Ajout des frames au QStackedWidget
         self.stacked_widget.addWidget(self.frame_connexion)
@@ -42,10 +45,14 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_stock)
         self.stacked_widget.addWidget(self.frame_greant_global)
         self.stacked_widget.addWidget(self.frame_succursale)
+        self.stacked_widget.addWidget(self.frame_gerant)
 
 
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
+        
+        
+        self.history = []
 
 
         # Affichage initial
@@ -167,28 +174,49 @@ class Vue(QMainWindow):
 
     # Méthodes pour basculer entre les frames
     def basculer_vers_connexion(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_connexion)
 
     def basculer_vers_splash(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_splash)
 
     def basculer_vers_vente(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_vente)
 
     def basculer_vers_stock(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_stock)
 
     def basculer_vers_succursale(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
 
     def basculer_vers_produit(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_produit)
         
     def basculer_vers_gerant_global(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
 
     def basculer_vers_fournisseur(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur)
+    
+    def basculer_vers_gerant(self, code): # baculer vers la succursale
+        self.history.append(self.stacked_widget.currentWidget())
+        Emplacement.succursalesCode = code
+        self.stacked_widget.setCurrentWidget(self.frame_gerant)
+        
+    def basculer_before(self):
+        if self.history:
+            previous_widget = self.history.pop()  # Retirer le dernier widget visité
+            self.stacked_widget.setCurrentWidget(previous_widget)
+            
+
+
 
     # Méthodes pour obtenir les informations saisies par l'utilisateur
 
