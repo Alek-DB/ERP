@@ -21,6 +21,7 @@ class QGerant(QWidget):
         button2 = QPushButton("Finance")
         button3 = QPushButton("HR")
         button4 = QPushButton("Gérer employé")
+        button4.clicked.connect(parent.basculer_vers_ajouter_employer)
         button_layout = QHBoxLayout()
         button_layout.addWidget(button1)
         button_layout.addWidget(button2)

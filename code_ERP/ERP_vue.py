@@ -10,6 +10,7 @@ from ERP_vue_dossier.succursale import QSuccursale
 from ERP_vue_dossier.stock import QStock
 from ERP_vue_dossier.gerant import QGerant
 from ERP_vue_dossier.connexion import QConnexion
+from ERP_vue_dossier.add_employe import QAddEmploye
 from ERP_emplacement import Emplacement
 
 # La classe Modele reste inchangée
@@ -38,6 +39,7 @@ class Vue(QMainWindow):
         self.frame_succursale = QSuccursale(self)
         self.frame_fournisseur = QFournisseur(self, self.controleur.db_manager)
         self.frame_gerant = QGerant(self)
+        self.frame_ajouter_employe = QAddEmploye(self)
 
         # Ajout des frames au QStackedWidget
         self.stacked_widget.addWidget(self.frame_connexion)
@@ -51,6 +53,7 @@ class Vue(QMainWindow):
 
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
+        self.stacked_widget.addWidget(self.frame_ajouter_employe)
         
         
         self.history = []
@@ -176,6 +179,10 @@ class Vue(QMainWindow):
     def basculer_vers_fournisseur(self):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur)
+    
+    def basculer_vers_ajouter_employer(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_ajouter_employe)
     
     def basculer_vers_gerant(self, code): # baculer vers la succursale
         self.history.append(self.stacked_widget.currentWidget())

@@ -75,7 +75,7 @@ class AddModifyDialog(QDialog):
         else:
             self.add_modify_button.clicked.connect(self.modify_product)
         
-        
+    # REMPLIR LES CHAMPS AVEC LA DATA
     def fill_inputs(self):
         if self.product_data:
             self.inputs["nom"].setText(self.product_data['nom'])
@@ -85,7 +85,7 @@ class AddModifyDialog(QDialog):
             self.inputs["statut"].setCurrentText(str(self.product_data['statut']))
             self.inputs["telephone"].setText(str(self.product_data['telephone']))
 
-    
+    # MODIFI DANS LA BASE DE DONNÉES
     def modify_product(self):
         # Récupérer les valeurs des champs de saisie
         nom = self.inputs["nom"].text()
