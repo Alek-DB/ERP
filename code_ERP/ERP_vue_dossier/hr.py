@@ -5,18 +5,14 @@ from ERP_vue_dossier.commandes_hr import CommandesHRWindow
 class qHRWindow(QWidget):
     def __init__(self, parent):
         super().__init__(parent)
-        
-        self.setWindowTitle("HR Management")
-        self.setGeometry(100, 100, 800, 600)
 
-        # Layout principal
+        self.setStyleSheet("QPushButton{padding: 10px; background-color:white; border:2px solid black;} QPushButton:pressed{background-color:#cacccf;}")
+
+        # Title and Layout
+        self.setWindowTitle("Gestion des Ressources Humaines")
         layout = QVBoxLayout()
 
-        # Titre
-        title = QLabel("Gestion des Ressources Humaines")
-        layout.addWidget(title)
-
-        # Boutons pour naviguer
+        # Navigation Buttons
         button_layout = QHBoxLayout()
 
         employe_button = QPushButton("Employés")
@@ -27,12 +23,11 @@ class qHRWindow(QWidget):
         commandes_button.clicked.connect(self.open_commandes_hr)
         button_layout.addWidget(commandes_button)
 
+        # Back Button
+        back_button = QPushButton("<-")
+        back_button.clicked.connect(parent.basculer_before)
 
-        # Bouton Retour
-        back_button = QPushButton("Back")
-        back_button.clicked.connect(parent.basculer_vers_gerant_global)
-        button_layout.addWidget(back_button)
-        
+        # Add Layouts and Improve Organization
         layout.addLayout(button_layout)
         self.setLayout(layout)
 
@@ -46,8 +41,5 @@ class qHRWindow(QWidget):
         self.commandes_window = CommandesHRWindow()
         self.commandes_window.show()
 
-    def go_back(self):
-        self.close()
-        from ERP_vue_dossier.hr import qHRWindow  # Import à l'intérieur de la fonction
-        self.hr_window = qHRWindow()
-        self.hr_window.show()
+    def emit_back_signal(self):
+        self.backButtonPressed.emit()  # Emit the custom signal for back
