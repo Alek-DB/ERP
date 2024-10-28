@@ -1,5 +1,4 @@
-from employe.ERP_employeDAO import EmployeDAO
-from ERP_role import Role
+#from ERP_role import Role
 
 class Employe:
     def __init__(self, prenom, nom, poste, salaire, date_naissance, date_embauche, sexe, statut, allergies, code_unique, role):
@@ -13,9 +12,13 @@ class Employe:
         self.statut = statut
         self.allergies = allergies
         self.code_unique = code_unique
-        self.role = role
-    
-     # Méthodes pour modifier chaque attribut
+        self.role = role  # Rôle en tant que numéro
+
+    #def __str__(self):
+    #    role_str = Role.get_role_name(self.role)
+    #    return f"{self.prenom} {self.nom} - {self.poste} ({self.code_unique}) - Rôle: {role_str}"
+
+    # Méthodes pour modifier chaque attribut
     def modifier_prenom(self, prenom):
         self.prenom = prenom
 

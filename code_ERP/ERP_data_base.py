@@ -36,7 +36,8 @@ class DatabaseManager:
             sexe TEXT CHECK(sexe IN ('M', 'F')),
             statut TEXT,
             allergies_preferences_alimentaires TEXT,
-            code_unique TEXT
+            code_unique TEXT,
+            mot_de_passe TEXT NOT NULL
         )
         """)
 
@@ -125,14 +126,11 @@ class DatabaseManager:
         CREATE TABLE IF NOT EXISTS Fournisseurs (
             id_fournisseur INTEGER PRIMARY KEY AUTOINCREMENT,
             nom TEXT NOT NULL,
-            contact_nom TEXT,
-            contact_telephone TEXT,
-            email TEXT,
-            adresse TEXT,
-            date_inscription TEXT,
-            statut TEXT,
-            notes TEXT
+            adresse TEXT NOT NULL,
+            telephone TEXT NOT NULL,
+            email TEXT NOT NULL
         )
+
         """)
 
         # Création de la table Produits
@@ -198,6 +196,7 @@ class DatabaseManager:
         self.cursor.execute("""
         CREATE TABLE IF NOT EXISTS Commandes (
             id_commande INTEGER PRIMARY KEY AUTOINCREMENT,
+            id_fournisseur INTEGER,
             id_client INTEGER,
             date_commande TEXT,
             statut TEXT,
@@ -210,7 +209,7 @@ class DatabaseManager:
         )
         """)
 
-        # Création de la table Commandes_Produits
+      # Création de la table Commandes_Produits
         self.cursor.execute("""
         CREATE TABLE IF NOT EXISTS Commandes_Produits (
             id_commande_produit INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -223,6 +222,7 @@ class DatabaseManager:
             FOREIGN KEY (id_produit) REFERENCES Produits(id_produit)
         )
         """)
+
 
         # Création de la table Achats
         self.cursor.execute("""
@@ -331,10 +331,26 @@ class DatabaseManager:
             FOREIGN KEY (id_achat) REFERENCES Achats(id_achat)
         )
         """)
+        
+        self._ensure_columns_exist('Fournisseurs', {
+        'telephone': 'TEXT'
+        })
+        
+        self._ensure_columns_exist('Commandes', {
+        'id_fournisseur': 'INTEGER'
+        })
 
         # Commit des changements
         self.connection.commit()
 
+    def _ensure_columns_exist(self, table_name, columns):
+        self.cursor.execute(f"PRAGMA table_info({table_name});")
+        existing_columns = [col[1] for col in self.cursor.fetchall()]
+        for column_name, column_type in columns.items():
+            if column_name not in existing_columns:
+                self.cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type};")
+                self.connection.commit()
+    
     def execute_query(self, query, parameters=()):
         with self.connection:
             self.cursor.execute(query, parameters)
@@ -355,6 +371,19 @@ class DatabaseManager:
 
     def __del__(self):
         self.close_connection()
+        
+    def get_column_names(self):
+        """Retourne les noms des colonnes d'un curseur SQLite."""
+        return [description[0] for description in self.cursor.description]
+        
+        
+    def get_all_stocks(self):
+        query = """
+        SELECT Stocks.id_stock, Produits.nom_produit, Stocks.qte_actuelle, Stocks.qte_max, Stocks.qte_min_restock
+        FROM Stocks
+        JOIN Produits ON Stocks.id_produit = Produits.id_produit
+        """
+        return self.execute_query(query)
 
         
         

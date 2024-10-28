@@ -17,9 +17,7 @@ class QGerantGlobal(QWidget):
         
         button2 = QPushButton("Ajout de champ")
         button3 = QPushButton("Règle d'affaire")
-        button4 = QPushButton("HR")
-        button4.clicked.connect(parent.basculer_vers_hr)
-
+        
         # Mise en page horizontale
         layout = QHBoxLayout()
         layout.addWidget(button1)

@@ -1,5 +1,6 @@
 import requests
 from ERP_data_base import DatabaseManager
+import hashlib
 
 class Modele:
     def __init__(self,db_manager):
@@ -11,31 +12,26 @@ class Modele:
         try:
             response = requests.post('http://localhost:5000/login', json={'username': username, 'password': password})
             if response.status_code == 200 and response.json().get('success'):
-                self.authenticated = True
-                return True
+                if self.verifier_login(username,password):
+                    self.authenticated = True
+                    return True
+                return False
             else:
                 return False
         except requests.exceptions.RequestException as e:
             print("Erreur de connexion au serveur:", e)
             return False
+           
+    def verifier_login(self, prenom, mot_de_passe):
+        resultat = self.db_manager.execute_query("SELECT mot_de_passe FROM Employes WHERE prenom = ?", (prenom,))
+        if resultat:
+            mot_de_passe_hache = resultat[0][0]
+            return mot_de_passe_hache == self.hacher_mot_de_passe(mot_de_passe)
+        else:
+            return False
 
-    # def verifier_identifiants(self, username, password):
-    # # Vérifie les identifiants dans la base de données
-    # query = "SELECT * FROM Employes WHERE code_unique = ? AND password = ?"
-    # parameters = (username, password)
-    # try:
-    #     result = self.db_manager.execute_query(query, parameters)
-    #     if result:
-    #         self.authenticated = True
-    #         # Vous pouvez stocker des informations supplémentaires sur l'utilisateur
-    #         self.utilisateur = result[0]
-    #         return True
-    #     else:
-    #         return False
-    # except sqlite3.Error as e:
-    #     print("Erreur lors de la vérification des identifiants :", e)
-    #     return False
-
+    def hacher_mot_de_passe(self, mot_de_passe):
+            return hashlib.sha256(mot_de_passe.encode()).hexdigest()
     
     def creer_vente(self, item, quantite, prix_unitaire, date):
         # Simule une requête pour créer une vente
