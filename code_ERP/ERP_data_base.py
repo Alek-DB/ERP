@@ -37,7 +37,8 @@ class DatabaseManager:
             statut TEXT,
             allergies_preferences_alimentaires TEXT,
             code_unique TEXT,
-            mot_de_passe TEXT NOT NULL
+            mot_de_passe TEXT NOT NULL,
+            username TEXT NOT NULL UNIQUE
         )
         """)
 

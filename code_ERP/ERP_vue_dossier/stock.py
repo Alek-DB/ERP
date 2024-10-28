@@ -206,6 +206,7 @@ class QStock(QWidget):
         add_button.clicked.connect(self.add_item)
         remove_button.clicked.connect(self.remove_item)
         modify_button.clicked.connect(self.modify_item)
+        back_button.clicked.connect(parent.basculer_before)
         
         
     def load_stock_data(self):
