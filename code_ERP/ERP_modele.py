@@ -22,8 +22,8 @@ class Modele:
             print("Erreur de connexion au serveur:", e)
             return False
            
-    def verifier_login(self, prenom, mot_de_passe):
-        resultat = self.db_manager.execute_query("SELECT mot_de_passe FROM Employes WHERE prenom = ?", (prenom,))
+    def verifier_login(self, username, mot_de_passe):
+        resultat = self.db_manager.execute_query("SELECT mot_de_passe FROM Employes WHERE username = ?", (username,))
         if resultat:
             mot_de_passe_hache = resultat[0][0]
             return mot_de_passe_hache == self.hacher_mot_de_passe(mot_de_passe)
@@ -32,6 +32,22 @@ class Modele:
 
     def hacher_mot_de_passe(self, mot_de_passe):
             return hashlib.sha256(mot_de_passe.encode()).hexdigest()
+        
+    def créer_premier_employé(self,username, password):
+        password = self.hacher_mot_de_passe(password)
+        try:
+            self.db_manager.execute_update("""
+                INSERT INTO Employes (prenom, nom, username, mot_de_passe, poste)
+                VALUES (?, ?, ?, ?, ?)
+            """, ("temp", "temp", username, password, "Gérant Global"))
+        except Exception as e:
+            print(e)
+    
+    def get_poste(self, username):
+        resultat = self.db_manager.execute_query("SELECT poste FROM Employes WHERE prenom = ?", (username,))
+        if resultat:
+            return resultat[0][0]
+        
     
     def creer_vente(self, item, quantite, prix_unitaire, date):
         # Simule une requête pour créer une vente
