@@ -7,7 +7,19 @@ import requests
 from ERP_modele import Modele
 from ERP_vue import Vue
 from ERP_data_base import DatabaseManager
-import sqlite3
+
+
+
+"""
++----------------------------------------------------+
+|                                                    |
+|                   USERNAME: emp                    |
+|                  MOT DE PASSE: AAAaaa111           |
+|                                                    |
++----------------------------------------------------+
+"""
+
+
 class Controleur:
     def __init__(self, db_manager): 
         self.db_manager = db_manager
@@ -15,10 +27,18 @@ class Controleur:
         self.vue = Vue(self)
         
     def se_connecter(self):
-        username, password = self.vue.obtenir_identifiants()
+        username, password = self.vue.frame_connexion.obtenir_identifiants()
+        if self.vue.frame_connexion.first_login:
+            self.modele.créer_premier_employé(username,password)
+        
         if self.modele.verifier_identifiants(username, password):
             #VERIFIER LE ROLE DE L'UTILISATEUR ET LE BASCULER SUR LA PAGE DE SON ROLE
             self.vue.afficher_message("Succès", "Connexion réussie !")
+            poste = self.modele.get_poste(username) #basculer selon poste
+            if poste == "Gérant global":pass
+            elif poste == "Employé":pass
+            elif poste == "Gérant":pass
+            
             self.vue.basculer_vers_splash()
         else:
             self.vue.afficher_message("Erreur", "Nom d'utilisateur ou mot de passe incorrect.")
@@ -57,6 +77,8 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     try:
         db_manager = DatabaseManager('erp_database.db')
+        #db_manager.execute_update("DELETE FROM Employes")
+        
         print("Les tables ont été créées avec succès.")
     except sqlite3.Error as e:
         QMessageBox.critical(None, "Erreur", f"Une erreur est survenue lors de l'initialisation de la base de données : {e}")

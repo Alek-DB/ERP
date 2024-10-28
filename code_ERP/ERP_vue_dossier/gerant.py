@@ -17,6 +17,7 @@ class QGerant(QWidget):
         
         
         button1 = QPushButton("Stock")
+        button1.clicked.connect(parent.basculer_vers_stock)
         button2 = QPushButton("Finance")
         button3 = QPushButton("HR")
         button4 = QPushButton("Gérer employé")

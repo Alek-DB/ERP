@@ -9,6 +9,7 @@ from ERP_vue_dossier.gerant_global import QGerantGlobal
 from ERP_vue_dossier.succursale import QSuccursale
 from ERP_vue_dossier.stock import QStock
 from ERP_vue_dossier.gerant import QGerant
+from ERP_vue_dossier.connexion import QConnexion
 from ERP_emplacement import Emplacement
 
 # La classe Modele reste inchangée
@@ -28,7 +29,7 @@ class Vue(QMainWindow):
         self.setCentralWidget(self.stacked_widget)
 
         # Création des différents frames
-        self.frame_connexion = self.creer_frame_connexion()
+        self.frame_connexion = QConnexion(self)
         self.frame_vente = self.creer_frame_vente()
         self.frame_stock = QStock(self)
         self.frame_produit = QProduit(self, self.controleur.db_manager)
@@ -53,37 +54,8 @@ class Vue(QMainWindow):
         
         
         self.history = []
-
-
         # Affichage initial
         self.basculer_vers_connexion()
-
-    def creer_frame_connexion(self):
-        widget = QWidget()
-        layout = QVBoxLayout()
-
-        titre = QLabel("Connexion ERP")
-        titre.setAlignment(Qt.AlignCenter)
-        titre.setStyleSheet("font-size: 18px; font-weight: bold;")
-        layout.addWidget(titre)
-
-        form_layout = QGridLayout()
-        self.entry_username = QLineEdit()
-        self.entry_password = QLineEdit()
-        self.entry_password.setEchoMode(QLineEdit.Password)
-        form_layout.addWidget(QLabel("Nom d'utilisateur"), 0, 0)
-        form_layout.addWidget(self.entry_username, 0, 1)
-        form_layout.addWidget(QLabel("Mot de passe"), 1, 0)
-        form_layout.addWidget(self.entry_password, 1, 1)
-
-        layout.addLayout(form_layout)
-
-        self.button_login = QPushButton("Se connecter")
-        self.button_login.clicked.connect(self.controleur.se_connecter)
-        layout.addWidget(self.button_login)
-
-        widget.setLayout(layout)
-        return widget
 
     def creer_frame_vente(self):
         widget = QWidget()
@@ -227,9 +199,6 @@ class Vue(QMainWindow):
 
 
     # Méthodes pour obtenir les informations saisies par l'utilisateur
-
-    def obtenir_identifiants(self):
-        return self.entry_username.text(), self.entry_password.text()
 
     def obtenir_informations_vente(self):
         return (
