@@ -50,7 +50,6 @@ class QAddEmploye(QWidget):
         layout.addWidget(self.allergies_input)
         layout.addWidget(QLabel("Code Unique"))
         layout.addWidget(self.code_unique_input)
-        
         # Add role selection to layout
         layout.addWidget(QLabel("Rôle"))
         layout.addWidget(self.role_input)

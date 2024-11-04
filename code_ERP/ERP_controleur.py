@@ -54,11 +54,7 @@ class Controleur:
         self.vue.basculer_vers_splash()
 
     def action_splash(self, action):
-        if action == "gestion":
-            self.vue.afficher_message("Gestion interne", "Fonctionnalité non implémentée")
-        elif action == "options":
-            self.vue.afficher_message("Options d'utilisation", "Fonctionnalité non implémentée")
-        elif action == "formulaire":
+        if action == "formulaire":
             self.vue.basculer_vers_vente()
         elif action == "stock":
             self.vue.basculer_vers_stock()
@@ -68,6 +64,8 @@ class Controleur:
             self.vue.basculer_vers_fournisseur()
         elif action == "succursale":
             self.vue.basculer_vers_succursale()
+        elif action == "gérant global":
+            self.vue.basculer_vers_gerant_global()
             
     def demarrer(self):
         self.vue.show()
