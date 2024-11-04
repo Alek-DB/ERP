@@ -98,13 +98,21 @@ class Vue(QMainWindow):
         self.button_enregistrer_vente.clicked.connect(self.controleur.enregistrer_vente)
         self.button_annuler = QPushButton("Annuler")
         self.button_annuler.clicked.connect(self.controleur.annuler_vente)
+        
         buttons_layout.addWidget(self.button_enregistrer_vente)
         buttons_layout.addWidget(self.button_annuler)
+        
+       
+        
+        
 
         layout.addLayout(buttons_layout)
 
         widget.setLayout(layout)
         return widget
+    
+    
+
 
     def creer_frame_splash(self):
         widget = QWidget()
