@@ -12,10 +12,10 @@ class QGerantGlobal(QWidget):
         
         # Création des boutons
         button1 = QPushButton("Succursale")
-        
         button1.clicked.connect(parent.basculer_vers_succursale)
         
         button2 = QPushButton("Ajout de champ")
+        button2.clicked.connect(parent.basculer_vers_ajout_champ)
         button3 = QPushButton("Règle d'affaire")
         
         # Mise en page horizontale
