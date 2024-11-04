@@ -14,29 +14,27 @@ from ERP_data_base import DatabaseManager
 class AddModifyDialog(QDialog):
     def __init__(self, parent, mode="Ajouter", product_data=None):
         super().__init__()
-        
+
         self.succursale = parent
         self.mode = mode
         self.product_data = product_data
-        
- 
+
         self.setWindowTitle(self.mode)
+        
         # Create the layout
         layout = QGridLayout()
 
-        # prend le nom des tables
+        # Prendre le nom des colonnes dynamiquement
         labels = []
         try:
             db_manager = DatabaseManager('erp_database.db')
-            query = "SELECT * FROM Succursales"
-            db_manager.execute_query(query, ())
-            labels = db_manager.get_column_names()
-            labels.remove("date_ouverture")
-            labels.remove("id_succursale")
+            column_query = "PRAGMA table_info(Succursales);"
+            columns_info = db_manager.execute_query(column_query)
+            labels = [column[1] for column in columns_info if column[1] not in ("id_succursale", "date_ouverture")]
 
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
-            
+
         self.inputs = {}
 
         for i, label in enumerate(labels):
@@ -54,7 +52,7 @@ class AddModifyDialog(QDialog):
         # Buttons for 'Ajouter/Modifier' and 'Annuler'
         self.add_modify_button = QPushButton(self.mode)
         self.cancel_button = QPushButton("Annuler")
-        
+
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.add_modify_button)
         button_layout.addWidget(self.cancel_button)
@@ -63,8 +61,7 @@ class AddModifyDialog(QDialog):
 
         # Set the layout
         self.setLayout(layout)
-        
-        
+
         if self.mode == "Modifier" and self.product_data:
             self.fill_inputs()
 
@@ -74,50 +71,48 @@ class AddModifyDialog(QDialog):
             self.add_modify_button.clicked.connect(self.enregistrer)
         else:
             self.add_modify_button.clicked.connect(self.modify_product)
-        
-    # REMPLIR LES CHAMPS AVEC LA DATA
+            
     def fill_inputs(self):
         if self.product_data:
-            self.inputs["nom"].setText(self.product_data['nom'])
-            self.inputs["adresse"].setText(self.product_data['adresse'])
-            self.inputs["code"].setText(str(self.product_data['code']))
-            self.inputs["gerant"].setText(str(self.product_data['gerant']))
-            self.inputs["statut"].setCurrentText(str(self.product_data['statut']))
-            self.inputs["telephone"].setText(str(self.product_data['telephone']))
+            # Exclure le code de la succursale (supposons que c'est le 3ème élément)
+            for label, value in zip(self.inputs.keys(), self.product_data):
+                print(label,"  ", value)
+                if isinstance(self.inputs[label], QComboBox):
+                    self.inputs[label].setCurrentText(str(value))
+                else:
+                    self.inputs[label].setText(str(value))
+                    
+            # Supprimer le code de l'affichage
+            self.product_code = self.product_data[2]  # Supposons que le code est le troisième élément
+            self.inputs['code'].setEnabled(False)  # Désactiver le champ ou ne pas l'afficher
 
-    # MODIFI DANS LA BASE DE DONNÉES
+
     def modify_product(self):
         # Récupérer les valeurs des champs de saisie
-        nom = self.inputs["nom"].text()
-        code_succursale = self.inputs["code"].text()
-        adresse = self.inputs["adresse"].text()
-        gerant = self.inputs["gerant"].text()
-        statut = self.inputs["statut"].currentText()
-        telephone = self.inputs["telephone"].text()
-
+        values = [input_field.text() if not isinstance(input_field, QComboBox) else input_field.currentText() 
+                for input_field in self.inputs.values()]
+        
         # Vérifier que tous les champs sont remplis
-        if not (nom and code_succursale and adresse and gerant and statut and telephone):
+        if not all(values):
             print("Tous les champs doivent être remplis.")
             return
 
         # Appeler la méthode de la classe parente pour mettre à jour les données
-        self.succursale.update_product(self.product_data['code'], nom, code_succursale, adresse, gerant, statut, telephone)
+        print(values)
+        self.succursale.update_product(self.product_data[4], values)  # Passer directement les valeurs
         self.close()
-    
+
     def enregistrer(self):
         """Récupérer les valeurs des champs et les enregistrer dans la base de données."""
-        values = {
-            label: input_field.currentText() if isinstance(input_field, QComboBox) else input_field.text() 
-            for label, input_field in self.inputs.items()
-        }
+        values = {label: input_field.currentText() if isinstance(input_field, QComboBox) else input_field.text() 
+                  for label, input_field in self.inputs.items()}
 
-        try: 
+        try:
             db_manager = DatabaseManager('erp_database.db')
-            
+
             # Construire la requête dynamiquement
             columns = ', '.join(values.keys())  # Clés du dictionnaire
-            placeholders = ', '.join(['?'] * (len(values)))  # Des points d'interrogation pour les valeurs
-
+            placeholders = ', '.join(['?'] * len(values))  # Des points d'interrogation pour les valeurs
 
             query = f"""
             INSERT INTO Succursales ({columns}, date_ouverture)
@@ -125,21 +120,21 @@ class AddModifyDialog(QDialog):
             """
 
             # Récupérer les valeurs dans l'ordre des colonnes
-            parameters = list(values.values()) 
+            parameters = list(values.values())
 
             rows_affected = db_manager.execute_update(query, parameters)
 
             if rows_affected > 0:
-                print("La succursale a été ajouté avec succès.")
+                print("La succursale a été ajoutée avec succès.")
                 self.succursale.load_succursale()
             else:
                 print("Aucune ligne n'a été ajoutée.")
 
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
-            
+
         self.close()
-        
+
     def closeEvent(self, event):
         self.succursale.modify_button.setStyleSheet("background-color: ;")
         self.succursale.succursale_table.itemClicked.disconnect()
@@ -230,7 +225,7 @@ class QSuccursale(QWidget):
         
     def remove_item(self):
         self.succursale_table.itemClicked.disconnect()
-        self.remove_button.setStyleSheet("background-color: red;")
+        self.remove_button.setStyleSheet("background-color: lightCoral;")
         self.modify_button.setStyleSheet("background-color: ;")
         self.open_button.setStyleSheet("background-color: ;")
         self.succursale_table.itemClicked.connect(self.confirm_deletion)
@@ -281,16 +276,22 @@ class QSuccursale(QWidget):
         
     def open_modify_dialog(self, item):
         row = item.row()
-        
-        product_data = {
-            'nom': self.succursale_table.item(row, 0).text(),
-            'adresse': self.succursale_table.item(row, 1).text(),
-            'code': self.succursale_table.item(row, 2).text(),
-            'gerant': self.succursale_table.item(row, 3).text(),
-            'statut': self.succursale_table.item(row, 4).text(),
-            'telephone': self.succursale_table.item(row, 5).text(),
-            'date_ouverture': self.succursale_table.item(row, 6).text()
-        }
+
+        succursale_code = self.succursale_table.item(row, 2).text()  # Ajustez selon votre structure
+
+        # Étape 1: Sélectionner toutes les colonnes de la table
+        query = "SELECT * FROM succursales WHERE code = ?"
+        result = self.db_manager.execute_query(query, (succursale_code,))
+
+        # Récupérer toutes les valeurs dans un tableau
+        product_data = []
+        if result:
+            product_data = list(result[0])  # Convertir le tuple en liste
+            
+            # Supprimer le premier élément (l'ID)
+            if product_data:
+                product_data.pop(0)  # Enlever l'ID
+                product_data.pop(6)
 
         # Ouvrir le dialogue en mode modification
         dialog = AddModifyDialog(self, mode="Modifier", product_data=product_data)
@@ -298,7 +299,7 @@ class QSuccursale(QWidget):
        
     def open_succursale(self):
         self.succursale_table.itemClicked.disconnect()
-        self.open_button.setStyleSheet("background-color: blue;")
+        self.open_button.setStyleSheet("background-color: lightblue;")
         self.remove_button.setStyleSheet("background-color: ;")
         self.modify_button.setStyleSheet("background-color: ;")
         self.succursale_table.itemClicked.connect(self.go_to)
@@ -306,20 +307,30 @@ class QSuccursale(QWidget):
     def go_to(self, item):
         self.vue.basculer_vers_gerant(self.succursale_table.item(item.row(), 2).text())
 
-    def update_product(self, old_code_succursale, nom, new_code_succursale, adresse, gerant, statut, telephone):
+    def update_product(self, old_code_succursale, new_values):
+        try:
+            # Récupérer les noms des colonnes de la table sans l'ID
+            column_query = "PRAGMA table_info(Succursales);"
+            columns_info = self.db_manager.execute_query(column_query)
+            columns = [column[1] for column in columns_info if column[1] not in ('id_succursale', 'date_ouverture')]
 
-            try:
-                self.db_manager.execute_update("""
-                    UPDATE Succursales
-                    SET nom = ?, code = ?, adresse = ?, gerant = ?, statut = ?, telephone = ?
-                    WHERE code = ?
-                """, (nom, new_code_succursale, adresse, gerant, statut, telephone, old_code_succursale))
+            # Construire la requête SQL dynamique
+            set_clause = ', '.join([f"{col} = ?" for col in columns])
+            query = f"UPDATE Succursales SET {set_clause} WHERE code = ?"
 
-                self.load_succursale()
+            # Combiner les nouvelles valeurs avec l'ancien code
+            values = new_values + [old_code_succursale]
 
+            # Impressions pour le débogage
+            print("Requête SQL :", query)
+            print("Valeurs à mettre à jour :", values)
 
-                print(f"Succursale {nom} mis à jour avec succès.")
-            except Exception as e:
-                print(f"Erreur lors de la mise à jour de la succursale: {e}")
+            # Exécuter la mise à jour
+            self.db_manager.execute_update(query, values)
+
+            self.load_succursale()
+            print(f"Succursale mise à jour avec succès.")
+        except Exception as e:
+            print(f"Erreur lors de la mise à jour de la succursale: {e}")
 
 
