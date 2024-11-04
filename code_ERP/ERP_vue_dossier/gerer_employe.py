@@ -74,7 +74,6 @@ class AddModifyDialog(QDialog):
     def fill_inputs(self):
         if self.employee_data:
             for label, value in zip(self.inputs.keys(), self.employee_data):
-                print(label, value )
                 if isinstance(self.inputs[label], QComboBox):
                     self.inputs[label].setCurrentText(str(value))
                 else:
@@ -101,9 +100,7 @@ class AddModifyDialog(QDialog):
 
             columns = ', '.join(values.keys())  # Clés du dictionnaire
             placeholders = ', '.join(['?'] * len(values))  # Des points d'interrogation pour les valeurs
-
-            print(columns)
-            print(placeholders)
+            
             query = f"""
             INSERT INTO Employes ({columns})
             VALUES ({placeholders})
@@ -145,6 +142,7 @@ class QGereEmploye(QWidget):
         add_button = QPushButton("Ajouter")
         self.remove_button = QPushButton("Retirer")
         self.modify_button = QPushButton("Modifier")
+        self.horaire_button = QPushButton("Horaire")
         back_button = QPushButton("<-")
 
         button_layout = QVBoxLayout()
@@ -152,6 +150,7 @@ class QGereEmploye(QWidget):
         button_layout.addWidget(add_button)
         button_layout.addWidget(self.remove_button)
         button_layout.addWidget(self.modify_button)
+        button_layout.addWidget(self.horaire_button)
 
         # Add button layout to the grid
         employe_layout.addLayout(button_layout, 0, 0)
@@ -186,6 +185,7 @@ class QGereEmploye(QWidget):
         add_button.clicked.connect(self.add_item)
         self.remove_button.clicked.connect(self.remove_item)
         self.modify_button.clicked.connect(self.modify_item)
+        self.horaire_button.clicked.connect(self.horaire_item)
         back_button.clicked.connect(self.vue.basculer_before)
 
     def load_employe(self):
@@ -212,6 +212,7 @@ class QGereEmploye(QWidget):
         self.employe_table.itemClicked.disconnect()
         self.remove_button.setStyleSheet("background-color: lightCoral;")
         self.modify_button.setStyleSheet("background-color: ;")
+        self.horaire_button.setStyleSheet("background-color: ;")
         self.employe_table.itemClicked.connect(self.confirm_deletion)
 
     def confirm_deletion(self, item):
@@ -248,6 +249,7 @@ class QGereEmploye(QWidget):
         self.employe_table.itemClicked.disconnect()
         self.modify_button.setStyleSheet("background-color: lightgreen;")
         self.remove_button.setStyleSheet("background-color: ;")
+        self.horaire_button.setStyleSheet("background-color: ;")
         self.employe_table.itemClicked.connect(self.open_modify_dialog)
 
     def open_modify_dialog(self, item):
@@ -263,7 +265,6 @@ class QGereEmploye(QWidget):
             employee_data = list(result[0])  # Convertir le tuple en liste
             # Supprimer l'ID et le mot de passe
             employee_data.pop(0)  # Enlever l'ID
-            print(employee_data)
             employee_data.pop(9)  # Enlever le mot de passe
 
         dialog = AddModifyDialog(self, mode="Modifier", employee_data=employee_data)
@@ -290,12 +291,19 @@ class QGereEmploye(QWidget):
 
             values = new_values + [old_username_employe]
 
-            print("Requête SQL :", query)
-            print("Valeurs à mettre à jour :", values)
-
             self.db_manager.execute_update(query, values)
 
             self.load_employe()
             print(f"Employé mis à jour avec succès.")
         except Exception as e:
             print(f"Erreur lors de la mise à jour de l'employé: {e}")
+            
+    def horaire_item(self):
+        self.employe_table.itemClicked.disconnect()
+        self.modify_button.setStyleSheet("background-color: ;")
+        self.remove_button.setStyleSheet("background-color: ;")
+        self.horaire_button.setStyleSheet("background-color: lightYellow;")
+        self.employe_table.itemClicked.connect(self.go_to)
+    
+    def go_to(self, item):
+        self.vue.basculer_vers_horaire(self.employe_table.item(item.row(), 1).text())
