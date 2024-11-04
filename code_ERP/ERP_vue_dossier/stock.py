@@ -211,23 +211,15 @@ class QStock(QWidget):
         
     def load_stock_data(self):
         """Charger les données des produits et du stock depuis la base de données."""
-<<<<<<< HEAD
-=======
         #rows = self.db_manager.get_all_stocks()
 
->>>>>>> bc4e591a3c1e710b6273971f78dae2b4edeb260c
         query = """
             SELECT p.nom_produit, p.code_produit, s.qte_max, s.qte_actuelle, s.qte_min_restock, p.prix
             FROM Stocks s
             JOIN Produits p ON s.id_produit = p.id_produit
         """
-<<<<<<< HEAD
-        self.cursor.execute(query)
-        rows = self.cursor.fetchall()
-=======
         
         rows = self.conn.execute_query(query)
->>>>>>> bc4e591a3c1e710b6273971f78dae2b4edeb260c
 
         # Ajouter les données dans le tableau
         self.stock_table.setRowCount(len(rows))
@@ -237,15 +229,9 @@ class QStock(QWidget):
 
 
     def add_item(self):
-<<<<<<< HEAD
-        # Open the Add/Modify dialog
-        dialog = AddModifyDialog(self)
-        dialog.exec_()
-=======
         dialog = AddModifyDialog(self, mode="Ajouter")
         dialog.exec_()
 
->>>>>>> bc4e591a3c1e710b6273971f78dae2b4edeb260c
         
     def add_new_product(self, nom, code_produit, qte_max, qte_actuelle, restock, prix):
         """Insérer un nouveau produit dans la base de données et le tableau."""
@@ -254,26 +240,6 @@ class QStock(QWidget):
             print(nom, code_produit, qte_max, qte_actuelle, restock, prix)
             
             # Insérer les données dans la table Produits
-<<<<<<< HEAD
-            self.cursor.execute("""
-                INSERT INTO Produits (nom_produit, code_produit, prix)
-                VALUES (?, ?, ?)
-            """, (nom, code_produit, prix))
-            produit_id = self.cursor.lastrowid
-            
-
-            # Insérer les données dans la table Stocks
-            self.cursor.execute("""
-                INSERT INTO Stocks (id_produit, qte_actuelle, qte_max, qte_min_restock)
-                VALUES (?, ?, ?, ?)
-            """, (produit_id, qte_actuelle, qte_max, restock))
-            self.conn.commit()
-
-            # Recharger les données dans le tableau
-            self.load_stock_data()
-        except sqlite3.IntegrityError:
-            print("Erreur : Le produit avec ce code existe déjà.")
-=======
             self.conn.execute_update("""
                 INSERT INTO Produits (nom_produit, code_produit, prix)
                 VALUES (?, ?, ?)
@@ -294,7 +260,6 @@ class QStock(QWidget):
             self.load_stock_data()
         except sqlite3.Error as e:
             print(f"Erreur {e}")
->>>>>>> bc4e591a3c1e710b6273971f78dae2b4edeb260c
 
     def remove_item(self):
         """Activer le mode sélection pour supprimer un produit."""
@@ -335,15 +300,9 @@ class QStock(QWidget):
         """Supprimer le produit de la base de données et mettre à jour le tableau."""
         try:
             # Supprimer le produit de la base de données
-<<<<<<< HEAD
-            self.cursor.execute("DELETE FROM Produits WHERE code_produit = ?", (code_produit,))
-            self.cursor.execute("DELETE FROM Stocks WHERE id_produit = (SELECT id_produit FROM Produits WHERE code_produit = ?)", (code_produit,))
-            self.conn.commit()
-=======
             
             self.conn.execute_update("DELETE FROM Stocks WHERE id_produit = (SELECT id_produit FROM Produits WHERE code_produit = ?)", (code_produit,))
             self.conn.execute_update("DELETE FROM Produits WHERE code_produit = ?", (code_produit,))
->>>>>>> bc4e591a3c1e710b6273971f78dae2b4edeb260c
 
             # Recharger les données dans le tableau
             self.load_stock_data()
@@ -354,11 +313,6 @@ class QStock(QWidget):
             print(f"Erreur lors de la suppression du produit: {e}")
 
     def modify_item(self):
-<<<<<<< HEAD
-        # Code to modify the selected item in the stock
-        print("Modify item clicked")
-        # Add logic to modify the selected row
-=======
         """Activer le mode sélection pour modifier un produit."""
         # Activer la sélection dans le tableau
         self.stock_table.setSelectionBehavior(QTableWidget.SelectRows)
@@ -408,6 +362,5 @@ class QStock(QWidget):
                 print(f"Erreur lors de la mise à jour du produit: {e}")
 
 
->>>>>>> bc4e591a3c1e710b6273971f78dae2b4edeb260c
         
 

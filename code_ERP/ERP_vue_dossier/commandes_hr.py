@@ -1,72 +1,63 @@
-from PySide6.QtWidgets import (
-    QLineEdit, QPushButton, QVBoxLayout, QHBoxLayout, 
-    QLabel, QWidget, QTableWidget, QTableWidgetItem
-)
-#from ERP_vue_dossier.hr import qHRWindow
+from PySide6.QtWidgets import QWidget, QPushButton, QGridLayout, QHBoxLayout, QLabel, QLineEdit
+from PySide6.QtCore import Qt
+from utils.QListe import QListe  # Importez la classe QListe
 
-class CommandesHRWindow(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
 
-        self.init_ui()
+class HR_Commandes(QWidget):
+    def __init__(self, parent):
+        super().__init__()
+        self.parent = parent
 
-    def init_ui(self):
-        # Main layout for Orders interface
-        main_layout = QVBoxLayout()
+        # Create the main layout
+        layout = QGridLayout()
 
-        # Search Box
+        # Création de la barre de recherche
         search_layout = QHBoxLayout()
-        self.search_box = QLineEdit(self)
-        self.search_box.setPlaceholderText("Rechercher commande...")
-        self.search_box.textChanged.connect(self.search_command)
-
-        search_button = QPushButton("Rechercher", self)
-        search_button.clicked.connect(self.search_command)
-
-        search_layout.addWidget(self.search_box)
+        self.search_bar = QLineEdit()
+        self.search_bar.setPlaceholderText("Rechercher une commande")
+        search_button = QPushButton("Rechercher")
+        search_button.clicked.connect(self.rechercher_commande)
+        back_button = QPushButton("<-")
+        back_button.clicked.connect(parent.basculer_before)
+        
+        search_layout.addWidget(self.search_bar)
+        search_layout.addWidget(back_button)
         search_layout.addWidget(search_button)
 
-        # Labels for additional fields
-        self.command_code_label = QLabel("Code Commande:")
-        self.invoice_label = QLabel("Facture Client/Commande:")
+        layout.addLayout(search_layout)
 
-        # Table to display order information
-        self.order_table = QTableWidget()
-        self.order_table.setColumnCount(3)  # Adjust based on required columns
-        self.order_table.setHorizontalHeaderLabels([
-            "Code Commande", "Facture Client", "Date de Commande"
-        ])
+        # Création de la liste des commandes
+        self.commande_liste = QListe("Commandes", [], ["Numéro", "Date", "Client"])
 
-        # Back button to return to the previous window
-        back_button = QPushButton("Back")
-        back_button.clicked.connect(self.vue.basculer_vers_hr)
+        layout.addWidget(self.commande_liste)
 
-        # Add widgets to the main layout
-        main_layout.addLayout(search_layout)
-        main_layout.addWidget(self.command_code_label)
-        main_layout.addWidget(self.invoice_label)
-        main_layout.addWidget(self.order_table)
-        main_layout.addWidget(back_button)  # Adding the back button at the end
+        self.setLayout(layout)
 
-        self.setLayout(main_layout)
+    def rechercher_commande(self):
+        # Récupération du numéro de commande saisi
+        numero_commande = self.search_bar.text()
 
-    def search_command(self):
-        search_text = self.search_box.text().strip()
-        filtered_orders = self.filter_orders(search_text)
-        self.update_order_display(filtered_orders)
+        # Requête pour récupérer les informations de la commande
+        # (remplacez par votre requête SQL ou votre méthode de récupération de données)
+        commande = self.get_commande_from_db(numero_commande)
 
-    #def filter_orders(self, search_text):
-     #   order_dao = OrderDAO()  # Assuming you have an OrderDAO class
-      #  return order_dao.get_orders_by_code_or_invoice(search_text)
+        if commande:
+            # Création de la liste des objets pour la classe QListe
+            objects = [
+                [commande["numero"], commande["date"], commande["client"]]
+            ]
 
-    def update_order_display(self, orders):
-        self.order_table.setRowCount(0)  # Clear previous results
+            # Mise à jour de la liste des commandes
+            self.commande_liste = QListe("Commandes", objects, ["Numéro", "Date", "Client"])
+            self.layout().addWidget(self.commande_liste)
+        else:
+            print("Commande non trouvée")
 
-        for order in orders:
-            row_position = self.order_table.rowCount()
-            self.order_table.insertRow(row_position)
-            self.order_table.setItem(row_position, 0, QTableWidgetItem(order['id_commande']))
-            self.order_table.setItem(row_position, 1, QTableWidgetItem(order['facture_client']))
-            self.order_table.setItem(row_position, 2, QTableWidgetItem(order['date_commande']))
-
-    
+    def get_commande_from_db(self, numero_commande):
+        # Requête pour récupérer les informations de la commande depuis la base de données
+        # (remplacez par votre requête SQL ou votre méthode de récupération de données)
+        query = "SELECT * FROM commandes WHERE numero = ?"
+        # Exécution de la requête et récupération des résultats
+        # (remplacez par votre méthode d'exécution de requête et de récupération de résultats)
+        result = {"numero": numero_commande, "date": "2022-01-01", "client": "Client 1"}
+        return result

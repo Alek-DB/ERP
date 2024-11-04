@@ -13,6 +13,9 @@ from ERP_vue_dossier.connexion import QConnexion
 from ERP_vue_dossier.add_employe import QAddEmploye
 from ERP_vue_dossier.ajout_champ import QAjoutChamp
 from ERP_emplacement import Emplacement
+from ERP_vue_dossier.hr import qHRWindow
+from ERP_vue_dossier.commandes_hr import CommandesHRWindow
+from ERP_vue_dossier.employe_hr import EmployeHRWindow
 
 # La classe Modele reste inchangée
 
@@ -42,6 +45,10 @@ class Vue(QMainWindow):
         self.frame_gerant = QGerant(self)
         self.frame_ajouter_employe = QAddEmploye(self)
         self.frame_ajout_champ = QAjoutChamp(self)
+        # Frame HR
+        self.frame_hr = qHRWindow(self)
+        self.frame_hr_commandes = CommandesHRWindow(self)
+        self.frame_hr_employe = EmployeHRWindow(self)
 
         # Ajout des frames au QStackedWidget
         self.stacked_widget.addWidget(self.frame_connexion)
@@ -51,7 +58,11 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_greant_global)
         self.stacked_widget.addWidget(self.frame_succursale)
         self.stacked_widget.addWidget(self.frame_gerant)
-
+        # Frame HR
+        self.stacked_widget.addWidget(self.frame_hr)
+        self.stacked_widget.addWidget(self.frame_hr_commandes)
+        self.stacked_widget.addWidget(self.frame_hr_employe)
+        
 
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
@@ -136,15 +147,17 @@ class Vue(QMainWindow):
         self.button_produit.clicked.connect(lambda: self.controleur.action_splash("produit"))
         self.button_fournisseur = QPushButton("Fournisseur")
         self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("fournisseur"))
-        self.button_fournisseur = QPushButton("Succursale")
-        self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("succursale"))
-        self.button_fournisseur = QPushButton("Gérant global")
-        self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("gérant global"))
+        self.button_succursale = QPushButton("Succursale")
+        self.button_succursale.clicked.connect(lambda: self.controleur.action_splash("succursale"))
+        self.button_gerant_global = QPushButton("Gérant global")
+        self.button_gerant_global.clicked.connect(lambda: self.controleur.action_splash("gérant global"))
         
         buttons_layout.addWidget(self.button_formulaire)
         buttons_layout.addWidget(self.button_stock)
         buttons_layout.addWidget(self.button_produit)
         buttons_layout.addWidget(self.button_fournisseur)
+        buttons_layout.addWidget(self.button_succursale)
+        buttons_layout.addWidget(self.button_gerant_global)
 
         layout.addLayout(buttons_layout)
 
@@ -192,10 +205,24 @@ class Vue(QMainWindow):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_ajouter_employe)
     
-    def basculer_vers_gerant(self, code): # baculer vers la succursale
+    def basculer_vers_gerant(self): # baculer vers la succursale , code
         self.history.append(self.stacked_widget.currentWidget())
-        Emplacement.succursalesCode = code
+        ##Emplacement.succursalesCode = code
         self.stacked_widget.setCurrentWidget(self.frame_gerant)
+    # vers hr    
+    def basculer_vers_hr(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_hr) 
+    # Vers HR commandes
+    def basculer_vers_commandes_hr(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_hr_commandes)
+    
+    # Vers HR Employées
+    def basculer_vers_employes_hr(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_hr_employe)   
+    
         
     def basculer_before(self):
         if self.history:

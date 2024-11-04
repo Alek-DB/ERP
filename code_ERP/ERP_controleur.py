@@ -67,6 +67,19 @@ class Controleur:
         elif action == "gérant global":
             self.vue.basculer_vers_gerant_global()
             
+        # Gerant   
+        elif action == "gérant":
+            self.vue.basculer_vers_gerant()
+        # HR
+        elif action == "hr":
+            self.vue.basculer_vers_hr()
+        # HR Commandes
+        elif action == "hr commandes":
+            self.vue.basculer_vers_hr_commandes()    
+        # HR Commandes
+        elif action == "hr employes":
+            self.vue.basculer_vers_hr_employes()  
+            
     def demarrer(self):
         self.vue.show()
         

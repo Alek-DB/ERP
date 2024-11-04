@@ -41,7 +41,7 @@ class EmployeHRWindow(QWidget):
 
         # Back button to return to the previous window
         back_button = QPushButton("Back")
-        back_button.clicked.connect(parent.basculer_vers_hr)
+        back_button.clicked.connect(self.vue.basculer_before)
 
         # Add widgets to the main layout
         main_layout.addLayout(search_layout)

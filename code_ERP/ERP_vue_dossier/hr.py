@@ -1,6 +1,5 @@
-from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel
-from ERP_vue_dossier.employe_hr import EmployeHRWindow
-from ERP_vue_dossier.commandes_hr import CommandesHRWindow
+from PySide6.QtWidgets import QWidget, QPushButton, QHBoxLayout
+from PySide6.QtCore import Qt
 
 class qHRWindow(QWidget):
     def __init__(self, parent):
@@ -10,36 +9,34 @@ class qHRWindow(QWidget):
 
         # Title and Layout
         self.setWindowTitle("Gestion des Ressources Humaines")
-        layout = QVBoxLayout()
-
-        # Navigation Buttons
-        button_layout = QHBoxLayout()
-
-        employe_button = QPushButton("Employés")
-        employe_button.clicked.connect(self.open_employe_hr)
-        button_layout.addWidget(employe_button)
-
-        commandes_button = QPushButton("Commandes")
-        commandes_button.clicked.connect(self.open_commandes_hr)
-        button_layout.addWidget(commandes_button)
-
+        
+        # Création des boutons
+        button1 = QPushButton("Employés")
+        button1.clicked.connect(parent.basculer_vers_employes_hr)
+        #employe_button.clicked.connect(parent.basculer_vers_succursale)
+        
+        button2 = QPushButton("Commandes")
+        #commandes_button.clicked.connect(parent.basculer_vers_ajout_champ)
+        button2.clicked.connect(parent.basculer_vers_commandes_hr)
+        
         # Back Button
         back_button = QPushButton("<-")
         back_button.clicked.connect(parent.basculer_before)
 
-        # Add Layouts and Improve Organization
-        layout.addLayout(button_layout)
+
+         # Mise en page horizontale
+        layout = QHBoxLayout()
+        layout.addWidget(button1)
+        layout.addWidget(button2)
+        layout.addWidget(back_button)
+
+      
+        # Ajouter du padding entre les boutons
+        layout.setSpacing(30)  # Espacement entre les boutons
+        layout.setContentsMargins(50, 50, 50, 50)  # Marges de la mise en page
+
+        # Centrer le layout dans la fenêtre
+        layout.setAlignment(Qt.AlignCenter)
+
+        # Appliquer le layout à la fenêtre
         self.setLayout(layout)
-
-    def open_employe_hr(self):
-        self.close()
-        self.employe_window = EmployeHRWindow()
-        self.employe_window.show()
-
-    def open_commandes_hr(self):
-        self.close()
-        self.commandes_window = CommandesHRWindow()
-        self.commandes_window.show()
-
-    def emit_back_signal(self):
-        self.backButtonPressed.emit()  # Emit the custom signal for back

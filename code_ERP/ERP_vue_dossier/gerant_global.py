@@ -23,7 +23,7 @@ class QGerantGlobal(QWidget):
         layout.addWidget(button1)
         layout.addWidget(button2)
         layout.addWidget(button3)
-        layout.addWidget(button4)
+        #layout.addWidget(button4)
         
 
         # Ajouter du padding entre les boutons
