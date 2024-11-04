@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import  QWidget, QPushButton, QHBoxLayout
+from PySide6.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout
 from PySide6.QtCore import Qt
 
 class QGerantGlobal(QWidget):
@@ -16,20 +16,38 @@ class QGerantGlobal(QWidget):
         
         button2 = QPushButton("Ajout de champ")
         button2.clicked.connect(parent.basculer_vers_ajout_champ)
+        
         button3 = QPushButton("Règle d'affaire")
         
-        # Mise en page horizontale
-        layout = QHBoxLayout()
-        layout.addWidget(button1)
-        layout.addWidget(button2)
-        layout.addWidget(button3)
+        # Mise en page horizontale pour les boutons centrés
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(button1)
+        button_layout.addWidget(button2)
+        button_layout.addWidget(button3)
 
         # Ajouter du padding entre les boutons
-        layout.setSpacing(30)  # Espacement entre les boutons
-        layout.setContentsMargins(50, 50, 50, 50)  # Marges de la mise en page
+        button_layout.setSpacing(30)  # Espacement entre les boutons
+        button_layout.setContentsMargins(50, 50, 50, 50)  # Marges de la mise en page
 
         # Centrer le layout dans la fenêtre
-        layout.setAlignment(Qt.AlignCenter)
+        button_layout.setAlignment(Qt.AlignCenter)
 
-        # Appliquer le layout à la fenêtre
-        self.setLayout(layout)
+        # Layout principal
+        main_layout = QVBoxLayout()
+
+        # Bouton en haut à droite
+        back_button = QPushButton("<-")
+        back_button.clicked.connect(parent.basculer_before)
+        back_button.setFixedSize(70, 50)  # Ajustez la taille du bouton si nécessaire
+
+        # Layout pour le bouton de retour
+        back_button_layout = QHBoxLayout()
+        back_button_layout.addWidget(back_button)
+        back_button_layout.addStretch()  # Pour pousser le bouton à droite
+
+        # Ajouter les layouts au layout principal
+        main_layout.addLayout(back_button_layout)  # Bouton en haut à droite
+        main_layout.addLayout(button_layout)  # Autres boutons centrés
+
+        # Appliquer le layout principal à la fenêtre
+        self.setLayout(main_layout)

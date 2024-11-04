@@ -12,10 +12,7 @@ class Modele:
         try:
             response = requests.post('http://localhost:5000/login', json={'username': username, 'password': password})
             if response.status_code == 200 and response.json().get('success'):
-                if self.verifier_login(username,password):
-                    self.authenticated = True
-                    return True
-                return False
+                return self.verifier_login(username,password)
             else:
                 return False
         except requests.exceptions.RequestException as e:
@@ -26,7 +23,13 @@ class Modele:
         resultat = self.db_manager.execute_query("SELECT mot_de_passe FROM Employes WHERE username = ?", (username,))
         if resultat:
             mot_de_passe_hache = resultat[0][0]
-            return mot_de_passe_hache == self.hacher_mot_de_passe(mot_de_passe)
+            if mot_de_passe_hache == None:
+                return "first"
+            elif  mot_de_passe_hache == self.hacher_mot_de_passe(mot_de_passe):
+                return "good"
+            else:
+                return "bad"
+
         else:
             return False
 
