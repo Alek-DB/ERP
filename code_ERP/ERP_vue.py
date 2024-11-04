@@ -11,6 +11,7 @@ from ERP_vue_dossier.stock import QStock
 from ERP_vue_dossier.gerant import QGerant
 from ERP_vue_dossier.connexion import QConnexion
 from ERP_vue_dossier.add_employe import QAddEmploye
+from ERP_vue_dossier.ajout_champ import QAjoutChamp
 from ERP_emplacement import Emplacement
 
 # La classe Modele reste inchangée
@@ -40,6 +41,7 @@ class Vue(QMainWindow):
         self.frame_fournisseur = QFournisseur(self, self.controleur.db_manager)
         self.frame_gerant = QGerant(self)
         self.frame_ajouter_employe = QAddEmploye(self)
+        self.frame_ajout_champ = QAjoutChamp(self)
 
         # Ajout des frames au QStackedWidget
         self.stacked_widget.addWidget(self.frame_connexion)
@@ -54,6 +56,7 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
         self.stacked_widget.addWidget(self.frame_ajouter_employe)
+        self.stacked_widget.addWidget(self.frame_ajout_champ)
         
         
         self.history = []
@@ -117,10 +120,6 @@ class Vue(QMainWindow):
         layout.addWidget(sous_titre)
 
         buttons_layout = QHBoxLayout()
-        self.button_gestion = QPushButton("Gestion interne")
-        self.button_gestion.clicked.connect(lambda: self.controleur.action_splash("gestion"))
-        self.button_options = QPushButton("Options d'utilisation")
-        self.button_options.clicked.connect(lambda: self.controleur.action_splash("options"))
         self.button_formulaire = QPushButton("Formulaire")
         self.button_formulaire.clicked.connect(lambda: self.controleur.action_splash("formulaire"))
         self.button_stock = QPushButton("Stock")
@@ -131,8 +130,9 @@ class Vue(QMainWindow):
         self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("fournisseur"))
         self.button_fournisseur = QPushButton("Succursale")
         self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("succursale"))
-        buttons_layout.addWidget(self.button_gestion)
-        buttons_layout.addWidget(self.button_options)
+        self.button_fournisseur = QPushButton("Gérant global")
+        self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("gérant global"))
+        
         buttons_layout.addWidget(self.button_formulaire)
         buttons_layout.addWidget(self.button_stock)
         buttons_layout.addWidget(self.button_produit)
@@ -193,7 +193,12 @@ class Vue(QMainWindow):
         if self.history:
             previous_widget = self.history.pop()  # Retirer le dernier widget visité
             self.stacked_widget.setCurrentWidget(previous_widget)
-            
+    
+    def basculer_vers_ajout_champ(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_ajout_champ)
+
+
 
 
 
