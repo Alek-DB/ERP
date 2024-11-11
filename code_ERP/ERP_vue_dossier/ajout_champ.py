@@ -106,10 +106,6 @@ class QAjoutChamp(QWidget):
                 self.mode = button.text()  # Mettre à jour le mode avec le texte du bouton
 
     def ajouter(self):
-        print("save")
-        print(self.mode)
-        print(self.input_nom.text())
-        print(self.input_type.currentText())
         
         # Vérifiez que les champs sont remplis
         if self.input_nom.text() != "" and self.input_type.currentText() != "":

@@ -11,12 +11,16 @@ from PySide6.QtCore import Qt
 
 from ERP_data_base import DatabaseManager
 
+
+
+#POP UP PAGE POUR MODIFIER OU AJOUTER ITEM
 class AddModifyDialog(QDialog):
     def __init__(self, parent, mode="Ajouter", product_data=None):
         super().__init__()
 
         self.succursale = parent
         self.mode = mode
+        # Product data est un array des éléments qu'on veut afficher
         self.product_data = product_data
 
         self.setWindowTitle(self.mode)
@@ -30,13 +34,13 @@ class AddModifyDialog(QDialog):
             db_manager = DatabaseManager('erp_database.db')
             column_query = "PRAGMA table_info(Succursales);"
             columns_info = db_manager.execute_query(column_query)
+            # not in pour retirer ce qu'on ne veut pas demander ou modifier
             labels = [column[1] for column in columns_info if column[1] not in ("id_succursale", "date_ouverture")]
-
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
 
         self.inputs = {}
-
+        # Crée les labels selon les champs de la table
         for i, label in enumerate(labels):
             lbl = QLabel(label)
             if label == "statut":
@@ -73,17 +77,15 @@ class AddModifyDialog(QDialog):
             self.add_modify_button.clicked.connect(self.modify_product)
             
     def fill_inputs(self):
+        # Quand on modifie, mettre les valeurs dans les champs
         if self.product_data:
-            # Exclure le code de la succursale (supposons que c'est le 3ème élément)
             for label, value in zip(self.inputs.keys(), self.product_data):
-                print(label,"  ", value)
                 if isinstance(self.inputs[label], QComboBox):
                     self.inputs[label].setCurrentText(str(value))
                 else:
                     self.inputs[label].setText(str(value))
                     
             # Supprimer le code de l'affichage
-            self.product_code = self.product_data[2]  # Supposons que le code est le troisième élément
             self.inputs['code'].setEnabled(False)  # Désactiver le champ ou ne pas l'afficher
 
 
@@ -98,8 +100,7 @@ class AddModifyDialog(QDialog):
             return
 
         # Appeler la méthode de la classe parente pour mettre à jour les données
-        print(values)
-        self.succursale.update_product(self.product_data[4], values)  # Passer directement les valeurs
+        self.succursale.update_product(self.product_data[4], values)  # Passer directement les valeurs et le code
         self.close()
 
     def enregistrer(self):
@@ -291,7 +292,7 @@ class QSuccursale(QWidget):
             # Supprimer le premier élément (l'ID)
             if product_data:
                 product_data.pop(0)  # Enlever l'ID
-                product_data.pop(6)
+                product_data.pop(6)     # Enlever la date d'ouverture
 
         # Ouvrir le dialogue en mode modification
         dialog = AddModifyDialog(self, mode="Modifier", product_data=product_data)

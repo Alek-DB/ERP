@@ -201,6 +201,7 @@ class Vue(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.frame_ajout_champ)
         
     def basculer_vers_gerer_employe(self):
+        self.frame_gerer_employe.load_employe()
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_gerer_employe)
 
