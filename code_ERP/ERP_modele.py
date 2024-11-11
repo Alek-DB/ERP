@@ -20,17 +20,19 @@ class Modele:
             return False
            
     def verifier_login(self, username, mot_de_passe):
+        # Exécuter la requête pour obtenir le mot de passe haché
         resultat = self.db_manager.execute_query("SELECT mot_de_passe FROM Employes WHERE username = ?", (username,))
+        
+        # Si un employé a été trouvé
         if resultat:
             mot_de_passe_hache = resultat[0][0]
-            if mot_de_passe_hache == None:
-                return "first"
-            elif  mot_de_passe_hache == self.hacher_mot_de_passe(mot_de_passe):
+            # Comparer le mot de passe fourni avec le mot de passe haché
+            if mot_de_passe_hache == self.hacher_mot_de_passe(mot_de_passe):
                 return "good"
             else:
                 return "bad"
-
         else:
+            # Si l'employé n'existe pas
             return False
 
     def hacher_mot_de_passe(self, mot_de_passe):
