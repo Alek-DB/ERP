@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QWidget, QPushButton, QGridLayout, QHBoxLayout, QLabel, QLineEdit
+from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit
 from PySide6.QtCore import Qt
 from utils.QListe import QListe  # Importez la classe QListe
 
@@ -8,8 +8,8 @@ class HR_Commandes(QWidget):
         super().__init__()
         self.parent = parent
 
-        # Create the main layout
-        layout = QGridLayout()
+        # Main layout for Employee interface
+        main_layout = QVBoxLayout()
 
         # Création de la barre de recherche
         search_layout = QHBoxLayout()
@@ -24,14 +24,15 @@ class HR_Commandes(QWidget):
         search_layout.addWidget(back_button)
         search_layout.addWidget(search_button)
 
-        layout.addLayout(search_layout)
-
+        
         # Création de la liste des commandes
         self.commande_liste = QListe("Commandes", [], ["Numéro", "Date", "Client"])
 
-        layout.addWidget(self.commande_liste)
+        main_layout.addWidget(self.commande_liste)
+        main_layout.addLayout(search_layout)
 
-        self.setLayout(layout)
+
+        self.setLayout(main_layout)
 
     def rechercher_commande(self):
         # Récupération du numéro de commande saisi

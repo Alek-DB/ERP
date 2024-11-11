@@ -1,4 +1,5 @@
-#from ERP_role import Role
+from ERP_role import Role
+from ERP_employeDAO import EmployeDAO
 
 class Employe:
     def __init__(self, prenom, nom, poste, salaire, date_naissance, date_embauche, sexe, statut, allergies, code_unique, role):

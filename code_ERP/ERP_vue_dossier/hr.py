@@ -13,11 +13,10 @@ class qHRWindow(QWidget):
         # Création des boutons
         button1 = QPushButton("Employés")
         button1.clicked.connect(parent.basculer_vers_employes_hr)
-        #employe_button.clicked.connect(parent.basculer_vers_succursale)
+
         
         button2 = QPushButton("Commandes")
-        #commandes_button.clicked.connect(parent.basculer_vers_ajout_champ)
-        button2.clicked.connect(parent.basculer_vers_commandes_hr)
+        #button2.clicked.connect(parent.basculer_vers_commandes_hr)
         
         # Back Button
         back_button = QPushButton("<-")

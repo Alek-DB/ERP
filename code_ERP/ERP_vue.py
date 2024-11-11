@@ -14,7 +14,7 @@ from ERP_vue_dossier.add_employe import QAddEmploye
 from ERP_vue_dossier.ajout_champ import QAjoutChamp
 from ERP_emplacement import Emplacement
 from ERP_vue_dossier.hr import qHRWindow
-from ERP_vue_dossier.commandes_hr import CommandesHRWindow
+from ERP_vue_dossier.commandes_hr import HR_Commandes
 from ERP_vue_dossier.employe_hr import EmployeHRWindow
 
 # La classe Modele reste inchangée
@@ -47,7 +47,7 @@ class Vue(QMainWindow):
         self.frame_ajout_champ = QAjoutChamp(self)
         # Frame HR
         self.frame_hr = qHRWindow(self)
-        self.frame_hr_commandes = CommandesHRWindow(self)
+        self.frame_hr_commandes = HR_Commandes(self)
         self.frame_hr_employe = EmployeHRWindow(self)
 
         # Ajout des frames au QStackedWidget
