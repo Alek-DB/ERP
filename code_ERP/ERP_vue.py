@@ -13,6 +13,9 @@ from ERP_vue_dossier.stock import QStock
 
 from ERP_vue_dossier.produit import QProduit
 from ERP_vue_dossier.fournisseur import QFournisseur
+from ERP_vue_dossier.finance import QFinance
+from ERP_vue_dossier.rapport_finance import QFinanceReport
+from ERP_vue_dossier.rapport_finance_fournisseur import QFinanceFournisseurReport
 
 
 class Vue(QMainWindow):
@@ -34,6 +37,9 @@ class Vue(QMainWindow):
         self.frame_greant_global = QGerantGlobal(self)
         self.frame_succursale = QSuccursale(self)
         self.frame_fournisseur = QFournisseur(self, self.controleur.db_manager)
+        self.frame_finance = QFinance(self)
+        self.frame_finance_report = QFinanceReport(self, self.controleur.db_manager)
+        self.frame_fournisseur_report = QFinanceFournisseurReport(self, self.controleur.db_manager)
 
         # Ajout des frames au QStackedWidget
         self.stacked_widget.addWidget(self.frame_connexion)
@@ -42,10 +48,12 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_stock)
         self.stacked_widget.addWidget(self.frame_greant_global)
         self.stacked_widget.addWidget(self.frame_succursale)
-
+        self.stacked_widget.addWidget(self.frame_finance)
 
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
+        self.stacked_widget.addWidget(self.frame_finance_report)
+        self.stacked_widget.addWidget(self.frame_fournisseur_report)
 
 
         # Affichage initial
@@ -147,6 +155,8 @@ class Vue(QMainWindow):
         self.button_produit.clicked.connect(lambda: self.controleur.action_splash("produit"))
         self.button_fournisseur = QPushButton("Fournisseur")
         self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("fournisseur"))
+        self.button_finance = QPushButton("Finance")
+        self.button_finance.clicked.connect(lambda: self.controleur.action_splash("finance"))
 
         buttons_layout.addWidget(self.button_gestion)
         buttons_layout.addWidget(self.button_options)
@@ -154,6 +164,7 @@ class Vue(QMainWindow):
         buttons_layout.addWidget(self.button_stock)
         buttons_layout.addWidget(self.button_produit)
         buttons_layout.addWidget(self.button_fournisseur)
+        buttons_layout.addWidget(self.button_finance)  
 
         layout.addLayout(buttons_layout)
 
@@ -179,17 +190,11 @@ class Vue(QMainWindow):
 
     def basculer_vers_succursale(self):
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
-<<<<<<< HEAD
         
-=======
-
-
-
-
     def basculer_vers_produit(self):
         self.stacked_widget.setCurrentWidget(self.frame_produit)
 
->>>>>>> a52582001cd5d8ae733eb36818ecd9b2d2e3b712
+
     def basculer_vers_gerant_global(self):
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
 
@@ -200,14 +205,22 @@ class Vue(QMainWindow):
             self.frame_ajout_succursale.set_to_modif()
         self.stacked_widget.setCurrentWidget(self.frame_ajout_succursale)
 
-<<<<<<< HEAD
-=======
 
     def basculer_vers_fournisseur(self):
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur)
+        
+    def basculer_vers_finance(self):
+        self.stacked_widget.setCurrentWidget(self.frame_finance)
+        
+    def basculer_vers_finance_report(self):
+        self.frame_finance_report.set_financial_data()
+        self.stacked_widget.setCurrentWidget(self.frame_finance_report)
+        
+    def basculer_vers_fournisseur_report(self):
+        self.stacked_widget.setCurrentWidget(self.frame_fournisseur_report)
+
 
     # Méthodes pour obtenir les informations saisies par l'utilisateur
->>>>>>> a52582001cd5d8ae733eb36818ecd9b2d2e3b712
     def obtenir_identifiants(self):
         return self.entry_username.text(), self.entry_password.text()
 
