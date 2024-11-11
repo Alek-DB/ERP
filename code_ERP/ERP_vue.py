@@ -13,6 +13,7 @@ from ERP_vue_dossier.connexion import QConnexion
 from ERP_vue_dossier.add_employe import QAddEmploye
 from ERP_vue_dossier.ajout_champ import QAjoutChamp
 from ERP_vue_dossier.gerer_employe import QGereEmploye
+from ERP_vue_dossier.horaire import QHoraire
 from ERP_emplacement import Emplacement
 
 # La classe Modele reste inchangée
@@ -44,6 +45,7 @@ class Vue(QMainWindow):
         self.frame_ajouter_employe = QAddEmploye(self)
         self.frame_ajout_champ = QAjoutChamp(self)
         self.frame_gerer_employe = QGereEmploye(self)
+        self.frame_horaire = QHoraire(self)
 
         # Ajout des frames au QStackedWidget
         self.stacked_widget.addWidget(self.frame_connexion)
@@ -60,6 +62,7 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_ajouter_employe)
         self.stacked_widget.addWidget(self.frame_ajout_champ)
         self.stacked_widget.addWidget(self.frame_gerer_employe)
+        self.stacked_widget.addWidget(self.frame_horaire)
         
         
         self.history = []
@@ -168,6 +171,7 @@ class Vue(QMainWindow):
 
     def basculer_vers_succursale(self):
         self.history.append(self.stacked_widget.currentWidget())
+        self.frame_succursale.load_succursale()
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
 
     def basculer_vers_produit(self):
@@ -175,6 +179,7 @@ class Vue(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.frame_produit)
         
     def basculer_vers_gerant_global(self):
+        Emplacement.succursalesId = -1
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
 
@@ -186,14 +191,27 @@ class Vue(QMainWindow):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_ajouter_employe)
     
-    def basculer_vers_gerant(self, code): # baculer vers la succursale
+    def basculer_vers_gerant(self, id): # baculer vers la succursale
         self.history.append(self.stacked_widget.currentWidget())
-        Emplacement.succursalesCode = code
+        Emplacement.succursalesId = id
         self.stacked_widget.setCurrentWidget(self.frame_gerant)
+        
+    def basculer_vers_horaire(self, id): # baculer vers la succursale
+        self.history.append(self.stacked_widget.currentWidget())
+        Emplacement.employeHoraire = id
+        #LE SUCCURSALE ID NE VA PAS ETRE BON SI ON EST DANS GERANT GLOBAL
+        self.frame_horaire.load_horaires()
+        self.stacked_widget.setCurrentWidget(self.frame_horaire)
         
     def basculer_before(self):
         if self.history:
             previous_widget = self.history.pop()  # Retirer le dernier widget visité
+            
+            if previous_widget == self.frame_greant_global: 
+                Emplacement.succursalesId = -1
+            if previous_widget == self.frame_gerer_employe: 
+                self.frame_gerer_employe.load_employe()
+            
             self.stacked_widget.setCurrentWidget(previous_widget)
     
     def basculer_vers_ajout_champ(self):
