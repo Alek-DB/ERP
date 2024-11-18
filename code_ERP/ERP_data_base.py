@@ -394,21 +394,6 @@ class DatabaseManager:
         """
         return self.execute_query(query)
 
-        
-        
-    def get_all_stocks(self):
-        query = """
-        SELECT Stocks.id_stock, Produits.nom_produit, Stocks.qte_actuelle, Stocks.qte_max, Stocks.qte_min_restock
-        FROM Stocks
-        JOIN Produits ON Stocks.id_produit = Produits.id_produit
-        """
-        return self.execute_query(query)
-
-    
-    def get_column_names(self):
-        return [description[0] for description in self.cursor.description]
-
-
 
 
 

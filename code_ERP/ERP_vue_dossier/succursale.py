@@ -447,5 +447,3 @@ class QSuccursale(QWidget):
             print(f"Succursale mise à jour avec succès.")
         except Exception as e:
             print(f"Erreur lors de la mise à jour de la succursale: {e}")
-
-

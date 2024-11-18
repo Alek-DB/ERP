@@ -47,12 +47,11 @@ class Vue(QMainWindow):
         self.frame_gerant = QGerant(self)
         self.frame_ajouter_employe = QAddEmploye(self)
         self.frame_ajout_champ = QAjoutChamp(self)
-<<<<<<< HEAD
+
         # Frame HR
         self.frame_hr = qHRWindow(self)
         self.frame_hr_commandes = HR_Commandes(self)
         self.frame_hr_employe = EmployeHRWindow(self)
-=======
         self.frame_gerer_employe = QGereEmploye(self)
         self.frame_horaire = QHoraire(self)
 
@@ -155,11 +154,6 @@ class Vue(QMainWindow):
         self.button_produit.clicked.connect(lambda: self.controleur.action_splash("produit"))
         self.button_fournisseur = QPushButton("Fournisseur")
         self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("fournisseur"))
-<<<<<<< HEAD
-        self.button_succursale = QPushButton("Succursale")
-        self.button_succursale.clicked.connect(lambda: self.controleur.action_splash("succursale"))
-=======
->>>>>>> 57c464d832032b824793c450feef7a395724aee9
         self.button_gerant_global = QPushButton("Gérant global")
         self.button_gerant_global.clicked.connect(lambda: self.controleur.action_splash("gérant global"))
         
@@ -167,10 +161,6 @@ class Vue(QMainWindow):
         buttons_layout.addWidget(self.button_stock)
         buttons_layout.addWidget(self.button_produit)
         buttons_layout.addWidget(self.button_fournisseur)
-<<<<<<< HEAD
-        buttons_layout.addWidget(self.button_succursale)
-=======
->>>>>>> 57c464d832032b824793c450feef7a395724aee9
         buttons_layout.addWidget(self.button_gerant_global)
 
         layout.addLayout(buttons_layout)

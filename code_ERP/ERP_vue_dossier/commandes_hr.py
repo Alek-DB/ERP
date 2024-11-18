@@ -1,64 +1,102 @@
-from PySide6.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit
+
+import sqlite3
+from PySide6.QtWidgets import QWidget, QPushButton, QGridLayout, QHBoxLayout, QLabel, QLineEdit, QVBoxLayout, QTableWidget, QTableWidgetItem
 from PySide6.QtCore import Qt
-from utils.QListe import QListe  # Importez la classe QListe
+from ERP_data_base import DatabaseManager
 
 
 class HR_Commandes(QWidget):
     def __init__(self, parent):
         super().__init__()
-        self.parent = parent
+        self.vue = parent
+        #set database
+        self.db_manager = DatabaseManager('erp_database.db')
 
         # Main layout for Employee interface
-        main_layout = QVBoxLayout()
+        hrCommande_layout = QGridLayout()
 
-        # Création de la barre de recherche
-        search_layout = QHBoxLayout()
-        self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("Rechercher une commande")
-        search_button = QPushButton("Rechercher")
-        search_button.clicked.connect(self.rechercher_commande)
+       # Left-side buttons layout (Ajouter, Retirer, Modifier, etc.)
+        add_button = QPushButton("Ajouter")
+        self.remove_button = QPushButton("Retirer")
+        self.modify_button = QPushButton("Modifier")
+        self.open_button = QPushButton("Ouvrir")
         back_button = QPushButton("<-")
-        back_button.clicked.connect(parent.basculer_before)
+
+        button_layout = QVBoxLayout()
+        button_layout.addWidget(back_button)
+        button_layout.addWidget(add_button)
+        button_layout.addWidget(self.remove_button)
+        button_layout.addWidget(self.modify_button)
+        button_layout.addWidget(self.open_button)
         
-        search_layout.addWidget(self.search_bar)
-        search_layout.addWidget(back_button)
-        search_layout.addWidget(search_button)
+        # Add button layout to the grid
+        hrCommande_layout.addLayout(button_layout, 0, 0)
 
+        # Title of the Commandes HR
+        title_label = QLabel("Commandes HR")
+        title_label.setAlignment(Qt.AlignCenter)
+        hrCommande_layout.addWidget(title_label, 0, 1)
         
-        # Création de la liste des commandes
-        self.commande_liste = QListe("Commandes", [], ["Numéro", "Date", "Client"])
+        # Search bar
+        search_label = QLabel("Rechercher :")
+        search_input = QLineEdit()
 
-        main_layout.addWidget(self.commande_liste)
-        main_layout.addLayout(search_layout)
+        search_layout = QHBoxLayout()
+        search_layout.addWidget(search_label)
+        search_layout.addWidget(search_input)
+        hrCommande_layout.addLayout(search_layout, 1, 1)
+        
+        self.commandeHR_table = QTableWidget()
+        self.commandeHR_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.commandeHR_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.commandeHR_table.setSelectionMode(QTableWidget.SingleSelection)
+        self.modify_item()
+        self.setLayout(hrCommande_layout)
+        self.load_commande()
 
+        # Add table to layout
+        hrCommande_layout.addWidget(self.succursale_table, 2, 1)
+        
+        
+        # Connect button actions to methods
+        add_button.clicked.connect(self.add_item)
+        self.remove_button.clicked.connect(self.remove_item)
+        self.modify_button.clicked.connect(self.modify_item)
+        self.open_button.clicked.connect(self.open_commande)
+        back_button.clicked.connect(self.vue.basculer_before)
 
-        self.setLayout(main_layout)
+    def load_commande(self):
+            try: #toy aca
+                db_manager = DatabaseManager('erp_database.db')
+                # METTRE LE NOM DE VOTRE TABLE ET LES VALEURS A AFFICHER DANS LA LISTE
+                query = "SELECT code_produit, nom_produit, prix, Succursale FROM Produits"
+                self.commandeHR_table.setColumnCount(4) # METTRE LE MEME DE COLONNE
+                rows = db_manager.execute_query(query, ())
+                self.commandeHR_table.setHorizontalHeaderLabels(["Nom", "Quantité", "Prix", "Succursale"])
 
-    def rechercher_commande(self):
-        # Récupération du numéro de commande saisi
-        numero_commande = self.search_bar.text()
+                self.commandeHR_table.setRowCount(len(rows))
+                for row_index, row_data in enumerate(rows):
+                    for col_index, data in enumerate(row_data):
+                        self.commandeHR_table.setItem(row_index, col_index, QTableWidgetItem(str(data)))
 
-        # Requête pour récupérer les informations de la commande
-        # (remplacez par votre requête SQL ou votre méthode de récupération de données)
-        commande = self.get_commande_from_db(numero_commande)
+            except sqlite3.Error as e:
+                print(f"Une erreur est survenue : {e}")
 
-        if commande:
-            # Création de la liste des objets pour la classe QListe
-            objects = [
-                [commande["numero"], commande["date"], commande["client"]]
-            ]
+    def open_modify_dialog(self, item):
+            row = item.row()
 
-            # Mise à jour de la liste des commandes
-            self.commande_liste = QListe("Commandes", objects, ["Numéro", "Date", "Client"])
-            self.layout().addWidget(self.commande_liste)
-        else:
-            print("Commande non trouvée")
+            succursale_id = self.commandeHR_table.item(row, 0).text()  # Ajustez selon votre structure
 
-    def get_commande_from_db(self, numero_commande):
-        # Requête pour récupérer les informations de la commande depuis la base de données
-        # (remplacez par votre requête SQL ou votre méthode de récupération de données)
-        query = "SELECT * FROM commandes WHERE numero = ?"
-        # Exécution de la requête et récupération des résultats
-        # (remplacez par votre méthode d'exécution de requête et de récupération de résultats)
-        result = {"numero": numero_commande, "date": "2022-01-01", "client": "Client 1"}
-        return result
+            # Étape 1: Sélectionner toutes les colonnes de la table
+            # METTRE LE NOM DE VOTRE TABLE ICI
+            query = "SELECT * FROM succursales WHERE id_succursale = ?"
+            result = self.db_manager.execute_query(query, (succursale_id,))
+
+            # Récupérer toutes les valeurs dans un tableau
+            product_data = []
+            if result:
+                product_data = list(result[0])  # Convertir le tuple en liste
+
+            # Ouvrir le dialogue en mode modification
+            dialog = AddModifyDialog(self, mode="Modifier", product_data=product_data)
+            dialog.exec_()
