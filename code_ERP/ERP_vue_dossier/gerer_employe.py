@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt
 
 from ERP_data_base import DatabaseManager
+from ERP_emplacement import Emplacement
 
 class AddModifyDialog(QDialog):
     def __init__(self, parent, mode="Ajouter", employee_data=None):
@@ -118,6 +119,49 @@ class AddModifyDialog(QDialog):
 
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
+            
+        try:
+            db_manager = DatabaseManager('erp_database.db')
+
+            query = f"""
+            INSERT INTO Employes_Succursales (id_employe, id_succursale, date_debut)
+            VALUES ({db_manager.cursor.lastrowid},{Emplacement.succursalesId}, date('now'))
+            """
+            
+            print(query)
+            db_manager.execute_update(query, ())
+        except sqlite3.Error as e:
+            print(f"Une erreur est survenue lors du lien : {e}")
+
+
+
+        try:
+            db_manager = DatabaseManager('erp_database.db')
+            
+            values = (
+                db_manager.cursor.lastrowid, Emplacement.succursalesId,
+                "09:00", "11:00",
+                "09:00", "11:00",
+                "09:00", "11:00",
+                "09:00", "11:00",
+                "09:00", "11:00"
+            )
+
+            query = """
+                        INSERT INTO Horaires (id_employe, id_succursale, date,
+                                            heure_entree_lundi, heure_sortie_lundi,
+                                            heure_entree_mardi, heure_sortie_mardi,
+                                            heure_entree_mercredi, heure_sortie_mercredi,
+                                            heure_entree_jeudi, heure_sortie_jeudi,
+                                            heure_entree_vendredi, heure_sortie_vendredi, statut)
+                        VALUES (?, ?, date('now'),
+                                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'actif')
+                    """
+            
+            
+            db_manager.execute_update(query, values)
+        except sqlite3.Error as e:
+            print(f"Une erreur est survenue lors de l'horaire: {e}")
 
         self.close()
 
@@ -174,7 +218,7 @@ class QGereEmploye(QWidget):
         self.employe_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.employe_table.setSelectionMode(QTableWidget.SingleSelection)
         self.modify_item()
-        self.employe_table.setColumnCount(4)  # Ajuster en fonction des colonnes d'employés
+        self.employe_table.setColumnCount(5)  # Ajuster en fonction des colonnes d'employés
         self.setLayout(employe_layout)
         self.load_employe()
 
@@ -191,10 +235,21 @@ class QGereEmploye(QWidget):
     def load_employe(self):
         try:
             db_manager = DatabaseManager('erp_database.db')
-            query = "SELECT nom, username, sexe, poste FROM Employes"
-            rows = db_manager.execute_query(query, ())
+            if Emplacement.succursalesId != -1:
+                query = """
+                SELECT e.id_employe, e.nom, e.username, e.sexe, e.poste
+                FROM Employes e
+                INNER JOIN Employes_Succursales es ON e.id_employe = es.id_employe
+                WHERE es.id_succursale = ?
+                """
+                rows = db_manager.execute_query(query, (Emplacement.succursalesId,))
+            else:
+                query = "SELECT id_employe, nom, username, sexe, poste FROM Employes"
+                rows = db_manager.execute_query(query, ())
+                
+            
 
-            self.employe_table.setHorizontalHeaderLabels(["Nom", "Username", "Sexe", "Poste"])
+            self.employe_table.setHorizontalHeaderLabels(["Id", "Nom", "Username", "Sexe", "Poste"])
 
             self.employe_table.setRowCount(len(rows))
             for row_index, row_data in enumerate(rows):
@@ -202,7 +257,7 @@ class QGereEmploye(QWidget):
                     self.employe_table.setItem(row_index, col_index, QTableWidgetItem(str(data)))
 
         except sqlite3.Error as e:
-            print(f"Une erreur est survenue : {e}")
+            print(f"Une erreur est survenue lors du loading des employé : {e}")
 
     def add_item(self):
         dialog = AddModifyDialog(self)
@@ -218,16 +273,16 @@ class QGereEmploye(QWidget):
     def confirm_deletion(self, item):
         row = item.row()
 
-        username = self.employe_table.item(row, 1).text()
+        id_employe = self.employe_table.item(row, 0).text()
 
         confirmation_dialog = QMessageBox()
         confirmation_dialog.setWindowTitle("Confirmer la suppression")
-        confirmation_dialog.setText(f"Voulez-vous vraiment supprimer l'employé '{username}' ?")
+        confirmation_dialog.setText(f"Voulez-vous vraiment supprimer l'employé '{id_employe}' ?")
         confirmation_dialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         confirmation_dialog.setIcon(QMessageBox.Warning)
 
         if confirmation_dialog.exec_() == QMessageBox.Yes:
-            self.delete_employe(username)
+            self.delete_employe(id_employe)
         else:
             self.employe_table.clearSelection()
 
@@ -235,15 +290,15 @@ class QGereEmploye(QWidget):
         self.remove_button.setStyleSheet("background-color: ;")
         self.load_employe()
 
-    def delete_employe(self, username):
+    def delete_employe(self, id_employe):
         try:
             db_manager = DatabaseManager('erp_database.db')
-            query = "DELETE FROM Employes WHERE nom = ?"
-            db_manager.execute_query(query, (username,))
+            query = "DELETE FROM Employes WHERE id_employe = ?"
+            db_manager.execute_query(query, (id_employe,))
 
-            print(f"L'employé {username} a été supprimé.")
-        except Exception as e:
-            print(f"Erreur lors de la suppression de l'employé: {e}") 
+            print(f"L'employé {id_employe} a été supprimé.")
+        except sqlite3.Error as e:
+            QMessageBox.critical(None, "Erreur", f"Une erreur est survenue lors de la supression : {e}")
 
     def modify_item(self):
         self.employe_table.itemClicked.disconnect()
@@ -255,10 +310,10 @@ class QGereEmploye(QWidget):
     def open_modify_dialog(self, item):
         row = item.row()
 
-        employe_nom = self.employe_table.item(row, 0).text()  # Ajustez selon votre structure
+        id_employe = self.employe_table.item(row, 0).text()  # Ajustez selon votre structure
 
-        query = "SELECT * FROM Employes WHERE nom = ?"
-        result = self.db_manager.execute_query(query, (employe_nom,))
+        query = "SELECT * FROM Employes WHERE id_employe = ?"
+        result = self.db_manager.execute_query(query, (id_employe,))
 
         employee_data = []
         if result:
@@ -269,16 +324,6 @@ class QGereEmploye(QWidget):
 
         dialog = AddModifyDialog(self, mode="Modifier", employee_data=employee_data)
         dialog.exec_()
-
-    def open_employe(self):
-        self.employe_table.itemClicked.disconnect()
-        self.open_button.setStyleSheet("background-color: blue;")
-        self.remove_button.setStyleSheet("background-color: ;")
-        self.modify_button.setStyleSheet("background-color: ;")
-        self.employe_table.itemClicked.connect(self.go_to)
-
-    def go_to(self, item):
-        self.vue.basculer_vers_employe(self.employe_table.item(item.row(), 0).text())
 
     def update_employee(self, old_username_employe, new_values):
         try:
@@ -306,4 +351,4 @@ class QGereEmploye(QWidget):
         self.employe_table.itemClicked.connect(self.go_to)
     
     def go_to(self, item):
-        self.vue.basculer_vers_horaire(self.employe_table.item(item.row(), 1).text())
+        self.vue.basculer_vers_horaire(self.employe_table.item(item.row(), 0).text())
