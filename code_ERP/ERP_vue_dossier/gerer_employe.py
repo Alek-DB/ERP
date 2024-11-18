@@ -163,6 +163,7 @@ class AddModifyDialog(QDialog):
         except sqlite3.Error as e:
             print(f"Une erreur est survenue lors de l'horaire: {e}")
 
+        self.gere_employe.load_employe()
         self.close()
 
     def closeEvent(self, event):

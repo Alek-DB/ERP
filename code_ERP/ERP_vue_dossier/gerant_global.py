@@ -18,6 +18,7 @@ class QGerantGlobal(QWidget):
         button2.clicked.connect(parent.basculer_vers_ajout_champ)
         
         button3 = QPushButton("Règle d'affaire")
+        button3.clicked.connect(parent.basculer_vers_regle_affaire)
         
         button4 = QPushButton("Gérer employé")
         button4.clicked.connect(parent.basculer_vers_gerer_employe)

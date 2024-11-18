@@ -14,6 +14,7 @@ from ERP_vue_dossier.add_employe import QAddEmploye
 from ERP_vue_dossier.ajout_champ import QAjoutChamp
 from ERP_vue_dossier.gerer_employe import QGereEmploye
 from ERP_vue_dossier.horaire import QHoraire
+from ERP_vue_dossier.regle_affaire import QRegleAffaire
 from ERP_emplacement import Emplacement
 
 # La classe Modele reste inchangée
@@ -46,6 +47,7 @@ class Vue(QMainWindow):
         self.frame_ajout_champ = QAjoutChamp(self)
         self.frame_gerer_employe = QGereEmploye(self)
         self.frame_horaire = QHoraire(self)
+        self.frame_regle_affaire = QRegleAffaire(self)
 
         # Ajout des frames au QStackedWidget
         self.stacked_widget.addWidget(self.frame_connexion)
@@ -55,14 +57,13 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_greant_global)
         self.stacked_widget.addWidget(self.frame_succursale)
         self.stacked_widget.addWidget(self.frame_gerant)
-
-
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
         self.stacked_widget.addWidget(self.frame_ajouter_employe)
         self.stacked_widget.addWidget(self.frame_ajout_champ)
         self.stacked_widget.addWidget(self.frame_gerer_employe)
         self.stacked_widget.addWidget(self.frame_horaire)
+        self.stacked_widget.addWidget(self.frame_regle_affaire)
         
         
         self.history = []
@@ -190,6 +191,10 @@ class Vue(QMainWindow):
     def basculer_vers_ajouter_employer(self):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_ajouter_employe)
+        
+    def basculer_vers_regle_affaire(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_regle_affaire)
     
     def basculer_vers_gerant(self, id): # baculer vers la succursale
         self.history.append(self.stacked_widget.currentWidget())

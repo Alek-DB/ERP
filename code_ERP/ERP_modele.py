@@ -26,10 +26,6 @@ class Modele:
         # Si un employé a été trouvé
         if resultat:
             mot_de_passe_hache = resultat[0][0]
-            print(mot_de_passe_hache)
-            print(mot_de_passe_hache == None)
-            print(mot_de_passe_hache is None)
-            print(mot_de_passe_hache == "None")
             # Comparer le mot de passe fourni avec le mot de passe haché
             if mot_de_passe_hache == self.hacher_mot_de_passe(mot_de_passe):
                 return "good"
@@ -61,7 +57,7 @@ class Modele:
             db_manager = DatabaseManager('erp_database.db')
             
             values = (
-                1, 1,
+                1, 1, 
                 "09:00", "11:00",
                 "09:00", "11:00",
                 "09:00", "11:00",
@@ -79,7 +75,6 @@ class Modele:
                         VALUES (?, ?, date('now'),
                                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'actif')
                     """
-            
             
             db_manager.execute_update(query, values)
             

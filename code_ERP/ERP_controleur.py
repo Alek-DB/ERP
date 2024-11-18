@@ -99,25 +99,25 @@ if __name__ == "__main__":
     try:
         db_manager = DatabaseManager('erp_database.db')
 
-        #db_manager.execute_update("DROP TABLE Horaires")
-        # Requête SQL pour récupérer tous les employés
+
+        #Requête SQL pour récupérer tous les employés
         
-        #SUPPRIMER LES EMPLOYÉS ET RESET LE ID
-        # query = "SELECT id_employe, nom, prenom, username, poste FROM Employes"
-        # results = db_manager.execute_query(query)
 
-        # if results:
-        #     # Affichage des résultats dans la console avec print
-        #     print(f"{'id':<20} {'Nom':<20} {'Prénom':<20} {'Username':<20} {'Poste':<20}")
-        #     print("-" * 80)  # Séparateur pour améliorer la lisibilité
-        #     for row in results:
-        #         id, nom, prenom, username, poste = row
-        #         print(f"{id:<20} {nom:<20} {prenom:<20} {username:<20} {poste:<20}")
+        query = "SELECT id_employe, nom, prenom, username, poste FROM Employes"
+        results = db_manager.execute_query(query)
 
-        # else:
-        #     print("Aucun employé trouvé dans la base de données.")
+        if results:
+            # Affichage des résultats dans la console avec print
+            print(f"{'id':<20} {'Nom':<20} {'Prénom':<20} {'Username':<20} {'Poste':<20}")
+            print("-" * 80)  # Séparateur pour améliorer la lisibilité
+            for row in results:
+                id, nom, prenom, username, poste = row
+                print(f"{id:<20} {nom:<20} {prenom:<20} {username:<20} {poste:<20}")
+
+        else:
+            print("Aucun employé trouvé dans la base de données.")
             
-        # # Supprimer toutes les lignes de la table
+        # Supprimer toutes les lignes de la table
         # db_manager.execute_update("DELETE FROM Horaires")
         # db_manager.execute_update("DELETE FROM Employes_Succursales")
         # db_manager.execute_update("DELETE FROM Succursales")
