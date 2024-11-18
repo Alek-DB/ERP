@@ -150,7 +150,11 @@ class QProduit(QWidget):
 
     def load_data(self):
         try:
-            query = "SELECT * FROM Produits"
+            query = """
+            SELECT p.*, s.qte_max, s.qte_actuelle, s.qte_min_restock
+            FROM Produits p
+            LEFT JOIN Stocks s ON p.id_produit = s.id_produit
+            """
             results = self.db_manager.execute_query(query)
             self.produit_table.setRowCount(0)  # Clear existing data
 
@@ -159,10 +163,18 @@ class QProduit(QWidget):
                 self.produit_table.setItem(row_number, 0, QTableWidgetItem(str(row_data['id_produit'])))
                 self.produit_table.setItem(row_number, 1, QTableWidgetItem(row_data['nom_produit']))
                 self.produit_table.setItem(row_number, 2, QTableWidgetItem(str(row_data['prix'])))
-                self.produit_table.setItem(row_number, 3, QTableWidgetItem(row_data.get('description', '')))
-                self.produit_table.setItem(row_number, 4, QTableWidgetItem(str(row_data.get('qte_max', ''))))
-                self.produit_table.setItem(row_number, 5, QTableWidgetItem(str(row_data.get('qte_actuelle', ''))))
-                self.produit_table.setItem(row_number, 6, QTableWidgetItem(str(row_data.get('qte_min_restock', ''))))
+
+                description = row_data['description'] or ''
+                self.produit_table.setItem(row_number, 3, QTableWidgetItem(description))
+
+                qte_max = row_data['qte_max'] if row_data['qte_max'] is not None else ''
+                self.produit_table.setItem(row_number, 4, QTableWidgetItem(str(qte_max)))
+
+                qte_actuelle = row_data['qte_actuelle'] if row_data['qte_actuelle'] is not None else ''
+                self.produit_table.setItem(row_number, 5, QTableWidgetItem(str(qte_actuelle)))
+
+                qte_min_restock = row_data['qte_min_restock'] if row_data['qte_min_restock'] is not None else ''
+                self.produit_table.setItem(row_number, 6, QTableWidgetItem(str(qte_min_restock)))
 
         except Exception as e:
             QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors du chargement des données : {e}")
