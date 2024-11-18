@@ -26,9 +26,15 @@ class Modele:
         # Si un employé a été trouvé
         if resultat:
             mot_de_passe_hache = resultat[0][0]
+            print(mot_de_passe_hache)
+            print(mot_de_passe_hache == None)
+            print(mot_de_passe_hache is None)
+            print(mot_de_passe_hache == "None")
             # Comparer le mot de passe fourni avec le mot de passe haché
             if mot_de_passe_hache == self.hacher_mot_de_passe(mot_de_passe):
                 return "good"
+            elif mot_de_passe_hache is None:
+                return "first"
             else:
                 return "bad"
         else:
@@ -45,9 +51,53 @@ class Modele:
                 INSERT INTO Employes (prenom, nom, username, mot_de_passe, poste)
                 VALUES (?, ?, ?, ?, ?)
             """, ("temp", "temp", username, password, "Gérant Global"))
+            
+            self.db_manager.execute_update("""
+                INSERT INTO Succursales (nom)
+                VALUES (?)
+            """, ("temp",))
+            
+
+            db_manager = DatabaseManager('erp_database.db')
+            
+            values = (
+                1, 1,
+                "09:00", "11:00",
+                "09:00", "11:00",
+                "09:00", "11:00",
+                "09:00", "11:00",
+                "09:00", "11:00"
+            )
+
+            query = """
+                        INSERT INTO Horaires (id_employe, id_succursale, date,
+                                            heure_entree_lundi, heure_sortie_lundi,
+                                            heure_entree_mardi, heure_sortie_mardi,
+                                            heure_entree_mercredi, heure_sortie_mercredi,
+                                            heure_entree_jeudi, heure_sortie_jeudi,
+                                            heure_entree_vendredi, heure_sortie_vendredi, statut)
+                        VALUES (?, ?, date('now'),
+                                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'actif')
+                    """
+            
+            
+            db_manager.execute_update(query, values)
+            
         except Exception as e:
             print(e)
-    
+            
+    def update_mdp(self,username, password):
+        password = self.hacher_mot_de_passe(password)
+        try:
+            self.db_manager.execute_update("""
+                UPDATE Employes
+                SET mot_de_passe = ?
+                WHERE username = ?
+            """, (password, username))
+        except Exception as e:
+            print(e)
+        
+        
     def get_poste(self, username):
         resultat = self.db_manager.execute_query("SELECT poste FROM Employes WHERE prenom = ?", (username,))
         if resultat:

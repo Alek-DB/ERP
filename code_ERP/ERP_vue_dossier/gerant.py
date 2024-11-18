@@ -8,7 +8,6 @@ class QGerant(QWidget):
     def __init__(self, parent):
         super().__init__()
         
-        print(Emplacement.succursalesCode)
         
         self.setStyleSheet("QPushButton{padding: 10px; background-color:white; border:2px solid black;}  QPushButton:pressed{background-color:#cacccf;}")
 

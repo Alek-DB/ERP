@@ -21,11 +21,15 @@ class QGerantGlobal(QWidget):
         button4 = QPushButton("HR")
         button4.clicked.connect(parent.basculer_vers_hr)
         
+        button4 = QPushButton("Gérer employé")
+        button4.clicked.connect(parent.basculer_vers_gerer_employe)
+        
         # Mise en page horizontale pour les boutons centrés
         button_layout = QHBoxLayout()
         button_layout.addWidget(button1)
         button_layout.addWidget(button2)
         button_layout.addWidget(button3)
+        button_layout.addWidget(button4)
 
         # Ajouter du padding entre les boutons
         button_layout.setSpacing(30)  # Espacement entre les boutons
