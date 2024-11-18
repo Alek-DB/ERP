@@ -13,6 +13,15 @@ from ERP_data_base import DatabaseManager
 
 
 
+# /--------------------------------------------------------------------\
+#
+#
+#   Succursale, doit aller chercher les données dans la base de donnée
+#
+#
+# \--------------------------------------------------------------------/
+
+
 #POP UP PAGE POUR MODIFIER OU AJOUTER ITEM
 class AddModifyDialog(QDialog):
     def __init__(self, parent, mode="Ajouter", product_data=None):
@@ -20,51 +29,66 @@ class AddModifyDialog(QDialog):
 
         self.succursale = parent
         self.mode = mode
+        
         # Product data est un array des éléments qu'on veut afficher
         self.product_data = product_data
-
+        
         self.setWindowTitle(self.mode)
         
         # Create the layout
         layout = QGridLayout()
+        
+        
+        
 
         # Prendre le nom des colonnes dynamiquement
         labels = []
         try:
             db_manager = DatabaseManager('erp_database.db')
-            column_query = "PRAGMA table_info(Succursales);"
-            columns_info = db_manager.execute_query(column_query)
-            # not in pour retirer ce qu'on ne veut pas demander ou modifier
+            column_query = "PRAGMA table_info(Succursales);"                        # METTRE LE NOM DE VOTRE BASE DE DONNÉES ICI
+            columns_info = db_manager.execute_query(column_query)                      
             labels = [column[1] for column in columns_info]
-            
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
+            
+            
+            
+            
+            
 
         self.inputs = {}
         # Crée les labels selon les champs de la table
         for i, label in enumerate(labels):
+            
             lbl = QLabel(label)
-            if label == "statut":
+            
+            # CAR STATUT EST UN DROPDOWN MENU, JE VEUX JUSTE MONTRER CES VALEURS
+            if label == "statut":                                   
                 # Créer un QComboBox pour le champ Statut
                 input_field = QComboBox()
                 input_field.addItems(["Actif", "Fermé"])  # Options du dropdown
-            elif label == "gerant":
+                
+            # CAR JE VEUX AFFICHER TOUT LES GERANT POSSIBLE EN ALLANT LES CHERCHER DANS LA BADE DE DONNÉE
+            elif label == "gerant":                                 
                 input_field = QComboBox()
                 gerants = db_manager.execute_query("SELECT id_employe, prenom, nom FROM Employes WHERE poste = 'Gérant'")
                 for gérant in gerants:
                     gérant_nom = f"{gérant[0]}, {gérant[1]} {gérant[2]}"  # Prenom + Nom
                     input_field.addItem(gérant_nom)  # Ajouter le nom complet avec l'ID
-            else:
+                
+            # SINON JE METS JUSTE UN QLINEEDIT (champs pour mettre du texte)   
+            else:                                                   
                 input_field = QLineEdit()  # Champ texte pour les autres labels
             layout.addWidget(lbl, i, 0)
             layout.addWidget(input_field, i, 1)
             self.inputs[label] = input_field
 
-        self.inputs['id_succursale'].setEnabled(False)  # Désactiver le champ ou ne pas l'afficher
+        self.inputs['id_succursale'].setEnabled(False)  # FONCTION POUR DISABLE UN CHAMP SI ON VEUT L'AFFICHER MAIS PAS POUVOIR LE MODIFIER
     
         # Buttons for 'Ajouter/Modifier' and 'Annuler'
         self.add_modify_button = QPushButton(self.mode)
         self.cancel_button = QPushButton("Annuler")
+        self.cancel_button.clicked.connect(self.close)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(self.add_modify_button)
@@ -75,20 +99,23 @@ class AddModifyDialog(QDialog):
         # Set the layout
         self.setLayout(layout)
 
+        # SI ON OUVRE LA CLASS EN MODE MODIFIER, ON DOIT REMPLIR LES CHAMPS AVEC LES VALEURS DE L'OBJECT A MODIFIER
         if self.mode == "Modifier" and self.product_data:
             self.fill_inputs()
 
-        # Connect cancel button to close the dialog
-        self.cancel_button.clicked.connect(self.close)
+        # SELON LE MODE, ON ENREGISTRE OU ON MODIFIE
         if self.mode == "Ajouter":
             self.add_modify_button.clicked.connect(self.enregistrer)
         else:
             self.add_modify_button.clicked.connect(self.modify_product)
             
     def fill_inputs(self):
-        """Quand on modifie, mettre les valeurs dans les champs."""
+        
         if self.product_data:
+            
             for label, value in zip(self.inputs.keys(), self.product_data):
+                
+                # SI LE CHAMP OU ON VEUT METTRE LA VALUE EST UN COMBOBOX (DROPDOWN MENU) FAIRE QQCHOSE EN PARTICULIER
                 if isinstance(self.inputs[label], QComboBox):
                     if label == "gerant":
                         # Si le champ est "gerant", récupérer l'ID et remplir le QComboBox avec nom, prénom
@@ -112,10 +139,10 @@ class AddModifyDialog(QDialog):
                         # Pour les autres QComboBox, on met simplement la valeur dans le champ
                         self.inputs[label].setCurrentText(str(value))
                 else:
-                    # Si ce n'est pas un QComboBox, c'est probablement un QLineEdit ou autre champ de texte
+                    # Si ce n'est pas un QComboBox
                     self.inputs[label].setText(str(value))
 
-            # Désactiver le champ 'code' (comme dans votre code original)
+            # Désactiver le champ 'code'
             self.inputs['code'].setEnabled(False)
 
 
@@ -124,8 +151,9 @@ class AddModifyDialog(QDialog):
         values = []
         for input_field in self.inputs.values():
             if isinstance(input_field, QComboBox):
+                
                 # Si le champ est un QComboBox, et c'est le champ des gérants, on récupère seulement l'ID
-                if input_field == self.inputs["gerant"]:  # Assurez-vous que vous avez bien le bon QComboBox
+                if input_field == self.inputs["gerant"]:  
                     selected_text = input_field.currentText()
                     # Récupérer l'ID du gérant (avant la virgule)
                     gerant_id = selected_text.split(",")[0]
@@ -142,9 +170,13 @@ class AddModifyDialog(QDialog):
             print("Tous les champs doivent être remplis.")
             return
 
-        # Appeler la méthode de la classe parente pour mettre à jour les données
-        self.succursale.update_product(self.product_data[4], values)  # Passer directement les valeurs et le code
+        # Appeler la méthode de la classe parente pour mettre à jour les données 
+        # ENVOYER LE ID POUR POUVOIR ALLER METTRE A JOUR L'ANCIENNE TABLE AVEC LES NOUVELLES VALUES
+        self.succursale.update_product(self.product_data[0], values)  
         self.close()
+
+
+
 
     def enregistrer(self):
         values = {}
@@ -165,7 +197,7 @@ class AddModifyDialog(QDialog):
                 values[label] = input_field.text()
 
             # Retirer "id_succursale" si présent
-            values.pop("id_succursale", None)
+            values.pop("id_succursale", None)   # ENLEVER LE ID DES NOUVELLES VALUES
 
         try:
             db_manager = DatabaseManager('erp_database.db')
@@ -174,6 +206,8 @@ class AddModifyDialog(QDialog):
             columns = ', '.join(values.keys())  # Clés du dictionnaire
             placeholders = ', '.join(['?'] * len(values))  # Des points d'interrogation pour les valeurs
 
+
+            # METTRE LE NOM DE VOTRE TABLE ICI
             query = f"""
             INSERT INTO Succursales ({columns}, date_ouverture)
             VALUES ({placeholders}, date('now'))
@@ -181,7 +215,6 @@ class AddModifyDialog(QDialog):
 
             # Récupérer les valeurs dans l'ordre des colonnes
             parameters = list(values.values())
-
             rows_affected = db_manager.execute_update(query, parameters)
 
             if rows_affected > 0:
@@ -192,8 +225,9 @@ class AddModifyDialog(QDialog):
 
         except sqlite3.Error as e:
             print(f"Une erreur est survenue lors de la créationd'une succursale : {e}")
-            
-            
+        
+        
+        # VOUS POUVEZ ARRETER ICI SI VOUS N'AVEZ PAS D'AUTRE TABLE A AFFECTÉ 
             #CÉRATION LIEN EMPLOYÉ SUCCURSALE
         try:
             db_manager = DatabaseManager('erp_database.db')
@@ -267,7 +301,6 @@ class QSuccursale(QWidget):
         self.succursale_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.succursale_table.setSelectionMode(QTableWidget.SingleSelection)
         self.modify_item()
-        self.succursale_table.setColumnCount(8)
         self.setLayout(succursale_layout)
         self.load_succursale()
 
@@ -284,7 +317,9 @@ class QSuccursale(QWidget):
     def load_succursale(self):
         try:
             db_manager = DatabaseManager('erp_database.db')
+            # METTRE LE NOM DE VOTRE TABLE ET LES VALEURS A AFFICHER DANS LA LISTE
             query = "SELECT id_succursale, nom, adresse, code, gerant, statut, telephone, date_ouverture FROM Succursales"
+            self.succursale_table.setColumnCount(8) # METTRE LE MEME DE COLONNE
             rows = db_manager.execute_query(query, ())
             self.succursale_table.setHorizontalHeaderLabels(["Id","Nom", "Adresse", "Code", "Gerant", "Statut", "Telephone", "Date d'Ouverture"])
 
@@ -338,6 +373,7 @@ class QSuccursale(QWidget):
     def delete_succursale(self, id_succursale):
         try:
             db_manager = DatabaseManager('erp_database.db')
+            #METTRE LE NOM DE VOTRE TABLE ICI
             query = "DELETE FROM Succursales WHERE id_succursale = ?"
             db_manager.execute_query(query, (id_succursale,))
 
@@ -358,6 +394,7 @@ class QSuccursale(QWidget):
         succursale_id = self.succursale_table.item(row, 0).text()  # Ajustez selon votre structure
 
         # Étape 1: Sélectionner toutes les colonnes de la table
+        # METTRE LE NOM DE VOTRE TABLE ICI
         query = "SELECT * FROM succursales WHERE id_succursale = ?"
         result = self.db_manager.execute_query(query, (succursale_id,))
 
@@ -380,27 +417,32 @@ class QSuccursale(QWidget):
     def go_to(self, item):
         self.vue.basculer_vers_gerant(self.succursale_table.item(item.row(), 0).text())
 
-    def update_product(self, old_code_succursale, new_values):
+
+
+    def update_product(self, id_succursale, new_values):
+        
+        
         try:
             # Récupérer les noms des colonnes de la table sans l'ID
-            column_query = "PRAGMA table_info(Succursales);"
+            
+            # METTRE LE NOM DE VOTRE TABLE
+            column_query = "PRAGMA table_info(Succursales);"                
             columns_info = self.db_manager.execute_query(column_query)
-            columns = [column[1] for column in columns_info if column[1] not in ('id_succursale', 'date_ouverture')]
+            columns = [column[1] for column in columns_info]
 
             # Construire la requête SQL dynamique
             set_clause = ', '.join([f"{col} = ?" for col in columns])
-            query = f"UPDATE Succursales SET {set_clause} WHERE code = ?"
+        
+        
+            # METTRE LE NOM DE VOTRE TABLE ET LE NOM DE L'ID 
+            query = f"UPDATE Succursales SET {set_clause} WHERE id_succursale = ?"
 
-            # Combiner les nouvelles valeurs avec l'ancien code
-            values = new_values + [old_code_succursale]
-
-            # Impressions pour le débogage
-            print("Requête SQL :", query)
-            print("Valeurs à mettre à jour :", values)
+            new_values.append(id_succursale)
 
             # Exécuter la mise à jour
-            self.db_manager.execute_update(query, values)
+            self.db_manager.execute_update(query, new_values)
 
+            # FONCTION QUI METS A JOUR LA LISTE
             self.load_succursale()
             print(f"Succursale mise à jour avec succès.")
         except Exception as e:
