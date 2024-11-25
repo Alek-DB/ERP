@@ -7,6 +7,7 @@ import requests
 from ERP_modele import Modele
 from ERP_vue import Vue
 from ERP_data_base import DatabaseManager
+import ERP_regle_affaire as regle
 
 
 
@@ -28,16 +29,21 @@ class Controleur:
         
     def se_connecter(self):
         username, password = self.vue.frame_connexion.obtenir_identifiants()
-         
+        
         state = self.modele.verifier_identifiants(username, password)
         
         if state == "good":
             #VERIFIER LE ROLE DE L'UTILISATEUR ET LE BASCULER SUR LA PAGE DE SON ROLE
             self.vue.afficher_message("Succès", "Connexion réussie !")
+            
+            #verifier les regles d'affaire
+            regle.verify_regles(self.db_manager)
+            
             poste = self.modele.get_poste(username) #basculer selon poste
             if poste == "Gérant global":pass
             elif poste == "Employé":pass
             elif poste == "Gérant":pass
+            
             self.vue.basculer_vers_splash()  
             
         elif state == "bad":    # employé existe mais mauvais mot de passe
@@ -77,9 +83,7 @@ class Controleur:
         self.vue.basculer_vers_splash()
 
     def action_splash(self, action):
-        if action == "formulaire":
-            self.vue.basculer_vers_vente()
-        elif action == "stock":
+        if action == "stock":
             self.vue.basculer_vers_stock()
         elif action == "produit":
             self.vue.basculer_vers_produit()
@@ -99,25 +103,25 @@ if __name__ == "__main__":
     try:
         db_manager = DatabaseManager('erp_database.db')
 
-        #db_manager.execute_update("DROP TABLE Horaires")
-        # Requête SQL pour récupérer tous les employés
+
+        #Requête SQL pour récupérer tous les employés
+
+        query = "SELECT id_employe, nom, prenom, username, poste FROM Employes"
+        results = db_manager.execute_query(query)
+
+        if results:
+            # Affichage des résultats dans la console avec print
+            print(f"{'id':<20} {'Nom':<20} {'Prénom':<20} {'Username':<20} {'Poste':<20}")
+            print("-" * 80)  # Séparateur pour améliorer la lisibilité
+            for row in results:
+                id, nom, prenom, username, poste = row
+                print(f"{id:<20} {nom:<20} {prenom:<20} {username:<20} {poste:<20}")
+
+        else:
+            print("Aucun employé trouvé dans la base de données.")
         
-        #SUPPRIMER LES EMPLOYÉS ET RESET LE ID
-        # query = "SELECT id_employe, nom, prenom, username, poste FROM Employes"
-        # results = db_manager.execute_query(query)
-
-        # if results:
-        #     # Affichage des résultats dans la console avec print
-        #     print(f"{'id':<20} {'Nom':<20} {'Prénom':<20} {'Username':<20} {'Poste':<20}")
-        #     print("-" * 80)  # Séparateur pour améliorer la lisibilité
-        #     for row in results:
-        #         id, nom, prenom, username, poste = row
-        #         print(f"{id:<20} {nom:<20} {prenom:<20} {username:<20} {poste:<20}")
-
-        # else:
-        #     print("Aucun employé trouvé dans la base de données.")
             
-        # # Supprimer toutes les lignes de la table
+        # Supprimer toutes les lignes de la table
         # db_manager.execute_update("DELETE FROM Horaires")
         # db_manager.execute_update("DELETE FROM Employes_Succursales")
         # db_manager.execute_update("DELETE FROM Succursales")

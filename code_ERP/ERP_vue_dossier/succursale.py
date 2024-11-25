@@ -129,9 +129,7 @@ class AddModifyDialog(QDialog):
                             
                             if result:
                                 prenom, nom = result[0]  # Extraire le prénom et le nom
-                                # Ajouter l'ID et le nom/prénom au QComboBox
-                                self.inputs[label].addItem(f"{gerant_id}, {prenom} {nom}")
-                                # Définir l'élément sélectionné dans le QComboBox
+  
                                 self.inputs[label].setCurrentText(f"{gerant_id}, {prenom} {nom}")
                         except sqlite3.Error as e:
                             print(f"Erreur lors de la récupération du gérant : {e}")
@@ -317,13 +315,32 @@ class QSuccursale(QWidget):
     def load_succursale(self):
         try:
             db_manager = DatabaseManager('erp_database.db')
-            # METTRE LE NOM DE VOTRE TABLE ET LES VALEURS A AFFICHER DANS LA LISTE
-            query = "SELECT id_succursale, nom, adresse, code, gerant, statut, telephone, date_ouverture FROM Succursales"
-            self.succursale_table.setColumnCount(8) # METTRE LE MEME DE COLONNE
+            
+            # Requête SQL avec l'opérateur || pour concaténer le prénom, nom et ID du gérant
+            query = """
+                SELECT s.id_succursale, s.nom, s.adresse, s.code, 
+                    e.prenom || ' ' || e.nom || ' - ' || e.id_employe AS gerant_info,
+                    s.statut, s.telephone, s.date_ouverture
+                FROM Succursales s
+                LEFT JOIN Employes e ON s.gerant = e.id_employe
+            """
+            
+            # Définition du nombre de colonnes (8 avec la colonne combinée pour le gérant)
+            self.succursale_table.setColumnCount(8)  # 8 colonnes maintenant (la colonne gérant combinée)
+            
+            # Exécution de la requête
             rows = db_manager.execute_query(query, ())
-            self.succursale_table.setHorizontalHeaderLabels(["Id","Nom", "Adresse", "Code", "Gerant", "Statut", "Telephone", "Date d'Ouverture"])
-
+            
+            # Définition des entêtes de colonnes
+            self.succursale_table.setHorizontalHeaderLabels([
+                "Id", "Nom", "Adresse", "Code", "Gérant", 
+                "Statut", "Téléphone", "Date d'Ouverture"
+            ])
+            
+            # Définir le nombre de lignes
             self.succursale_table.setRowCount(len(rows))
+            
+            # Remplir la table avec les données
             for row_index, row_data in enumerate(rows):
                 for col_index, data in enumerate(row_data):
                     self.succursale_table.setItem(row_index, col_index, QTableWidgetItem(str(data)))
