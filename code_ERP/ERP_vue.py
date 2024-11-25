@@ -16,6 +16,8 @@ from ERP_vue_dossier.fournisseur import QFournisseur
 from ERP_vue_dossier.finance import QFinance
 from ERP_vue_dossier.rapport_finance import QFinanceReport
 from ERP_vue_dossier.rapport_finance_fournisseur import QFinanceFournisseurReport
+from ERP_vue_dossier.commande_fournisseur import QCommandeFournisseur
+
 
 
 class Vue(QMainWindow):
@@ -40,6 +42,8 @@ class Vue(QMainWindow):
         self.frame_finance = QFinance(self)
         self.frame_finance_report = QFinanceReport(self, self.controleur.db_manager)
         self.frame_fournisseur_report = QFinanceFournisseurReport(self, self.controleur.db_manager)
+        self.frame_fournisseur_commande = QCommandeFournisseur(self, self.controleur.db_manager)
+
 
         # Ajout des frames au QStackedWidget
         self.stacked_widget.addWidget(self.frame_connexion)
@@ -54,6 +58,8 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_fournisseur)
         self.stacked_widget.addWidget(self.frame_finance_report)
         self.stacked_widget.addWidget(self.frame_fournisseur_report)
+        self.stacked_widget.addWidget(self.frame_fournisseur_commande)
+
 
 
         # Affichage initial
@@ -218,6 +224,9 @@ class Vue(QMainWindow):
         
     def basculer_vers_fournisseur_report(self):
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur_report)
+        
+    def basculer_vers_fournisseur_commandes(self):
+        self.stacked_widget.setCurrentWidget(self.frame_fournisseur_commande)
 
 
     # Méthodes pour obtenir les informations saisies par l'utilisateur

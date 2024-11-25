@@ -1,3 +1,4 @@
+import sqlite3
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QPushButton, QLabel, QTableWidget, QTableWidgetItem
 from PySide6.QtCore import Qt, Signal
 
@@ -31,8 +32,8 @@ class QFinanceFournisseurReport(QWidget):
 
         # Tableau pour les commandes et leurs prix
         self.table = QTableWidget()
-        self.table.setColumnCount(2)
-        self.table.setHorizontalHeaderLabels(["Commande", "Prix payé"])
+        self.table.setColumnCount(4)
+        self.table.setHorizontalHeaderLabels(["Fournisseur", "Commande", "Prix payé", "Statut"])
         
         
         # Étiquette pour le total
@@ -47,33 +48,74 @@ class QFinanceFournisseurReport(QWidget):
 
         # Ajouter le layout principal
         self.setLayout(layout)
+        
+        self.print_all_commandes()
 
         
+        
+    def print_all_commandes(self):
+    # Requête pour sélectionner toutes les colonnes et lignes de la table Commandes
+        query = "SELECT * FROM Commandes"
+        # Exécuter la requête
+        results = self.db_manager.execute_query(query)
+        
+        # Vérifier s'il y a des résultats
+        if not results:
+            print("La table Commandes est vide.")
+            return
+
+        # Parcourir et afficher chaque ligne
+        print("Contenu de la table Commandes :")
+        for row in results:
+            print(dict(row))  # Convertit la ligne en dictionnaire pour un affichage lisible
+
+        
+
         
 
     def load_supplier_payments(self):
     # Requête SQL pour récupérer les achats des fournisseurs avec le prix total
         query = """
-            SELECT Produits.nom_produit, Fournisseurs.nom, Achats_Produits.total_ligne
-            FROM Achats_Produits
-            JOIN Produits ON Achats_Produits.id_produit = Produits.id_produit
-            JOIN Achats ON Achats_Produits.id_achat = Achats.id_achat
-            JOIN Fournisseurs ON Achats.id_fournisseur = Fournisseurs.id_fournisseur
+        SELECT 
+            Fournisseurs.nom AS fournisseur,
+            Produits.nom_produit AS produit,
+            Commandes.total AS total_commande,
+            Commandes.statut
+            FROM Commandes
+            JOIN Commandes_Produits ON Commandes.id_commande = Commandes_Produits.id_commande
+            JOIN Produits ON Commandes_Produits.id_produit = Produits.id_produit
+            JOIN Fournisseurs ON Commandes.id_fournisseur = Fournisseurs.id_fournisseur
         """
         
-        # Exécuter la requête
-        results = self.db_manager.execute_query(query)
+        try:
+            # Exécuter la requête et récupérer les résultats
+            results = self.db_manager.execute_query(query)
 
-        # Remplissage du tableau
-        self.table.setRowCount(len(results))
-        self.total = 0  # Réinitialiser le total
-        for row, row_data in enumerate(results):
-            # Ajout des données dans le tableau
-            self.table.setItem(row, 0, QTableWidgetItem(str(row_data["nom_produit"])))
-            self.table.setItem(row, 1, QTableWidgetItem(f"{row_data['nom']:.2f} €"))
+            # Si aucun résultat, afficher un message
+            if not results:
+                print("Aucun paiement trouvé pour les fournisseurs.")
+                return
+
+            # Remplissage du tableau
+            self.total = 0  # Réinitialiser le total
             
-            # Calcul du total
-            self.total += row_data["total_ligne"]
+            filtered_results = [row for row in results if row["statut"] != 'En cours']  # Filtrer les résultats
 
-        # Mise à jour du total dans le label
-        self.total_label.setText(f"Total : {self.total:.2f} €")
+            # Définir le nombre de lignes dans le tableau
+            self.table.setRowCount(len(filtered_results))  
+
+            for row, row_data in enumerate(filtered_results):
+                # Ajout des données dans le tableau
+                self.table.setItem(row, 0, QTableWidgetItem(row_data["fournisseur"]))
+                self.table.setItem(row, 1, QTableWidgetItem(row_data["produit"]))
+                self.table.setItem(row, 2, QTableWidgetItem(str(row_data["total_commande"])))
+                self.table.setItem(row, 3, QTableWidgetItem(row_data['statut']))
+
+                # Calcul du total des paiements
+                self.total += row_data["total_commande"]
+
+            # Mise à jour du total dans le label
+            self.total_label.setText(f"Total : {self.total:.2f} $")
+
+        except sqlite3.Error as e:
+            print(f"Une erreur est survenue lors de la récupération des paiements : {e}")

@@ -31,6 +31,7 @@ class QFinance(QWidget):
         report_supplier_finance_button.clicked.connect(self.show_supplier_report)
         
         supplier_order_button.setStyleSheet(button_style)
+        supplier_order_button.clicked.connect(self.show_fournisseur_commandes)
 
         # Ajout des boutons au layout
         layout.addWidget(report_finance_button, 1, 1)
@@ -44,4 +45,7 @@ class QFinance(QWidget):
         
     def show_supplier_report(self):
         self.vue.basculer_vers_fournisseur_report()
+        
+    def show_fournisseur_commandes(self):
+        self.vue.basculer_vers_fournisseur_commandes()
     
