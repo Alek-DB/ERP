@@ -1,16 +1,42 @@
 from ERP_data_base import DatabaseManager
-
+import sqlite3
 class EmployeDAO:
     def __init__(self):
-        self.db_manager = DatabaseManager()    
+        self.db_manager = DatabaseManager()  
+        
+        
+    def get_column_names(self):
+        """Obtiene los nombres de las columnas de la tabla Employes."""
+        query = "PRAGMA table_info(Employes);"
+        columns_info = self.db_manager.execute_query(query)
+        return [column[1] for column in columns_info]
+    
+    def search_employees(self, search_text):
+        """Search employees by name, code, or other fields."""
+        query = "SELECT * FROM Employes WHERE code_unique LIKE ? OR nom LIKE ? OR prenom LIKE ?"
+        result = self.db_manager.execute_query(query, (f"%{search_text}%", f"%{search_text}%", f"%{search_text}%"))
+        if result:
+            column_names = [column[0] for column in self.db_manager.execute_query("PRAGMA table_info(Employes);")]
+            return [dict(zip(column_names, row)) for row in result]
+        return []
 
 
     def get_employe_by_id(self, id_employe):
-        query = "SELECT * FROM Employes WHERE id_employe = ?"
-        results = self.db_manager.execute_query(query, (id_employe,))
-        if results:
-            return results[0]  # Retourne le premier enregistrement trouvé
-        else:
+            query = "SELECT * FROM Employes WHERE id_employe = ?"
+            results = self.db_manager.execute_query(query, (id_employe,))
+            if results:
+                column_names = []
+                try:
+                    # Obtener los nombres de las columnas de la tabla 'Employes'
+                    column_query = "PRAGMA table_info(Employes);"
+                    columns_info = self.db_manager.execute_query(column_query)
+                    
+                    # Extraer solo los nombres de las columnas
+                    column_names = [column[1] for column in columns_info]
+                except sqlite3.Error as e:
+                    print(f"Error al obtener información de la tabla: {e}")
+                # Convertir las filas en diccionarios utilizando los nombres de las columnas
+                return [dict(zip(column_names, row)) for row in results]
             return None
 
     def add_employe(self, employe_data):

@@ -16,7 +16,7 @@ from ERP_vue_dossier.gerer_employe import QGereEmploye
 from ERP_vue_dossier.horaire import QHoraire
 from ERP_emplacement import Emplacement
 from ERP_vue_dossier.hr import qHRWindow
-from ERP_vue_dossier.commandes_hr import HR_Commandes
+from ERP_vue_dossier.commandes_hr import CommandesHRWindow
 from ERP_vue_dossier.employe_hr import EmployeHRWindow
 
 # La classe Modele reste inchangée
@@ -50,7 +50,7 @@ class Vue(QMainWindow):
 
         # Frame HR
         self.frame_hr = qHRWindow(self)
-        self.frame_hr_commandes = HR_Commandes(self)
+        self.frame_hr_commandes = CommandesHRWindow(self)
         self.frame_hr_employe = EmployeHRWindow(self)
         self.frame_gerer_employe = QGereEmploye(self)
         self.frame_horaire = QHoraire(self)
@@ -120,10 +120,6 @@ class Vue(QMainWindow):
         buttons_layout.addWidget(self.button_enregistrer_vente)
         buttons_layout.addWidget(self.button_annuler)
         
-       
-        
-        
-
         layout.addLayout(buttons_layout)
 
         widget.setLayout(layout)
