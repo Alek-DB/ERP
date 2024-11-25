@@ -341,6 +341,19 @@ class DatabaseManager:
         )
         """)
         
+        #création de la table Regle d'affaire
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Regle_affaires (
+            id_regle_affaire INTEGER PRIMARY KEY AUTOINCREMENT,
+            table_name TEXT,
+            champ_name TEXT,
+            operateur TEXT,
+            valeur TEXT,
+            action TEXT,
+            desc TEXT
+        )
+        """)
+        
         self._ensure_columns_exist('Fournisseurs', {
         'telephone': 'TEXT'
         })

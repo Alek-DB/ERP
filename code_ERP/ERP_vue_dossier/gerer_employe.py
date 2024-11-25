@@ -20,33 +20,43 @@ class AddModifyDialog(QDialog):
 
         self.setWindowTitle(self.mode)
         
+        self.db_manager = DatabaseManager('erp_database.db')
+        
         # Create the layout
         layout = QGridLayout()
 
         # Prendre le nom des colonnes dynamiquement
         labels = []
         try:
-            db_manager = DatabaseManager('erp_database.db')
             column_query = "PRAGMA table_info(Employes);"
-            columns_info = db_manager.execute_query(column_query)
+            columns_info = self.db_manager.execute_query(column_query)
             labels = [column[1] for column in columns_info if column[1] not in ("id_employe", "mot_de_passe")]
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
 
         self.inputs = {}
 
+        if Emplacement.succursalesId == -1 and self.mode == "Ajouter": #on est en gérant global    
+            labels.append("Succursale")
         for i, label in enumerate(labels):
             lbl = QLabel(label)
             if label == "sex":
                 # Créer un QComboBox pour le champ Sexe
                 input_field = QComboBox()
                 input_field.addItems(["M", "F"])  # Options du dropdown
+            elif label == "Succursale":
+                input_field = QComboBox()
+                succursales = self.db_manager.execute_query("SELECT id_succursale, nom FROM Succursales")
+                for succursale in succursales:
+                    succursale_nom = f"{succursale[0]},  {succursale[1]}"
+                    input_field.addItem(succursale_nom)
             else:
                 input_field = QLineEdit()  # Champ texte pour les autres labels
             layout.addWidget(lbl, i, 0)
             layout.addWidget(input_field, i, 1)
             self.inputs[label] = input_field
 
+        self.inputs["date_naissance"].setPlaceholderText("YYYY-MM-DD")
         # Buttons for 'Ajouter/Modifier' and 'Annuler'
         self.add_modify_button = QPushButton(self.mode)
         self.cancel_button = QPushButton("Annuler")
@@ -73,6 +83,9 @@ class AddModifyDialog(QDialog):
             
             
     def fill_inputs(self):
+        if Emplacement.succursalesId == -1 and self.mode == "Ajouter": #on est en gérant global    
+            succursale_employe = self.db_manager.execute_query("SELECT name FROM Succursales WHERE id_employe = ?", (self.employee_data[0],))
+            self.employee_data.append(succursale_employe)
         if self.employee_data:
             for label, value in zip(self.inputs.keys(), self.employee_data):
                 if isinstance(self.inputs[label], QComboBox):
@@ -97,8 +110,8 @@ class AddModifyDialog(QDialog):
                   for label, input_field in self.inputs.items()}
 
         try:
-            db_manager = DatabaseManager('erp_database.db')
-
+            if Emplacement.succursalesId == -1 and self.mode == "Ajouter": #on est en gérant global    
+                self.succursale = values.pop("Succursale")
             columns = ', '.join(values.keys())  # Clés du dictionnaire
             placeholders = ', '.join(['?'] * len(values))  # Des points d'interrogation pour les valeurs
             
@@ -109,7 +122,9 @@ class AddModifyDialog(QDialog):
 
             parameters = list(values.values())
 
-            rows_affected = db_manager.execute_update(query, parameters)
+            rows_affected = self.db_manager.execute_update(query, parameters)
+            
+            self.id = self.db_manager.cursor.lastrowid
 
             if rows_affected > 0:
                 print("L'employé a été ajouté avec succès.")
@@ -119,27 +134,32 @@ class AddModifyDialog(QDialog):
 
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
+            return
             
         try:
-            db_manager = DatabaseManager('erp_database.db')
 
+            if Emplacement.succursalesId != -1: #on est en gérant global    
+                self.succursale = Emplacement.succursalesId
+                
             query = f"""
             INSERT INTO Employes_Succursales (id_employe, id_succursale, date_debut)
-            VALUES ({db_manager.cursor.lastrowid},{Emplacement.succursalesId}, date('now'))
+            VALUES ({self.id},{self.succursale}, date('now'))
             """
             
+            print("Lien ----------------------------")
             print(query)
-            db_manager.execute_update(query, ())
+            print(self.db_manager.cursor.lastrowid)
+            print(self.succursale)
+            self.db_manager.execute_update(query, ())
         except sqlite3.Error as e:
             print(f"Une erreur est survenue lors du lien : {e}")
 
 
 
         try:
-            db_manager = DatabaseManager('erp_database.db')
             
             values = (
-                db_manager.cursor.lastrowid, Emplacement.succursalesId,
+                self.id, int(self.succursale),
                 "09:00", "11:00",
                 "09:00", "11:00",
                 "09:00", "11:00",
@@ -157,9 +177,11 @@ class AddModifyDialog(QDialog):
                         VALUES (?, ?, date('now'),
                                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'actif')
                     """
-            
-            
-            db_manager.execute_update(query, values)
+            print("Horaire ----------------------------")
+            print(query)
+            print(values)
+            self.db_manager.execute_update(query, values)
+            print("horaire rajouter")
         except sqlite3.Error as e:
             print(f"Une erreur est survenue lors de l'horaire: {e}")
 
@@ -294,8 +316,17 @@ class QGereEmploye(QWidget):
     def delete_employe(self, id_employe):
         try:
             db_manager = DatabaseManager('erp_database.db')
-            query = "DELETE FROM Employes WHERE id_employe = ?"
-            db_manager.execute_query(query, (id_employe,))
+            
+            result =  db_manager.execute_query("SELECT nom FROM Succursales WHERE gerant = ?", (id_employe,))
+            print(result)
+            if result: 
+                QMessageBox.critical(None, "Erreur", f"L'employé est un gérant de la succursale {result[0][0]}")
+                return
+            
+            db_manager.execute_query("DELETE FROM Employes_Roles WHERE id_employe = ?", (id_employe,))
+            db_manager.execute_query("DELETE FROM Employes_Succursales WHERE id_employe = ?", (id_employe,))
+            db_manager.execute_query("DELETE FROM Horaires WHERE id_employe = ?", (id_employe,))
+            db_manager.execute_query("DELETE FROM Employes WHERE id_employe = ?", (id_employe,))
 
             print(f"L'employé {id_employe} a été supprimé.")
         except sqlite3.Error as e:

@@ -78,11 +78,12 @@ class QHoraire(QWidget):
                 FROM Horaires
                 WHERE id_employe = ? 
             """
-            result = db_manager.execute_query(query, (Emplacement.employeHoraire))
+            
+            print((Emplacement.employeHoraire))
+            result = db_manager.execute_query(query, (int(Emplacement.employeHoraire),))
 
             if result:
                 horaires = result[0]
-                print(horaires[0])
                 jours = ["lundi", "mardi", "mercredi", "jeudi", "vendredi"]
 
                 # Remplir les champs de l'interface avec les horaires récupérés
