@@ -77,7 +77,6 @@ class QFinanceReport(QWidget):
         query = """
         SELECT SUM(total) AS total_expenses
         FROM Achats
-        WHERE statut = 'Valide'
         """
         result = self.db_manager.execute_query(query)
         return result[0]["total_expenses"] if result[0]["total_expenses"] is not None else 0
@@ -86,7 +85,7 @@ class QFinanceReport(QWidget):
         query = """
         SELECT SUM(total) AS total_profits
         FROM Commandes
-        WHERE statut = 'Valide'
+        WHERE statut = 'Accepter'
         """
         result = self.db_manager.execute_query(query)
         return result[0]["total_profits"] if result[0]["total_profits"] is not None else 0
@@ -95,7 +94,6 @@ class QFinanceReport(QWidget):
         query = """
         SELECT SUM(salaire) AS total_salaries
         FROM Employes
-        WHERE statut = 'Actif'
         """
         result = self.db_manager.execute_query(query)
         return result[0]["total_salaries"] if result[0]["total_salaries"] is not None else 0

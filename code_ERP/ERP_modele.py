@@ -1,5 +1,6 @@
 import requests
 from ERP_data_base import DatabaseManager
+import hashlib
 
 class Modele:
     def __init__(self,db_manager):
@@ -11,31 +12,124 @@ class Modele:
         try:
             response = requests.post('http://localhost:5000/login', json={'username': username, 'password': password})
             if response.status_code == 200 and response.json().get('success'):
-                self.authenticated = True
-                return True
+                return self.verifier_login(username,password)
             else:
                 return False
         except requests.exceptions.RequestException as e:
             print("Erreur de connexion au serveur:", e)
             return False
+           
+    def verifier_login(self, username, mot_de_passe):
+        # Exécuter la requête pour obtenir le mot de passe haché
+        resultat = self.db_manager.execute_query("SELECT mot_de_passe FROM Employes WHERE username = ?", (username,))
+        
+        # Si un employé a été trouvé
+        if resultat:
+            mot_de_passe_hache = resultat[0][0]
+            # Comparer le mot de passe fourni avec le mot de passe haché
+            if mot_de_passe_hache == self.hacher_mot_de_passe(mot_de_passe):
+                return "good"
+            elif mot_de_passe_hache is None:
+                return "first"
+            else:
+                return "bad"
+        else:
+            # Si l'employé n'existe pas
+            return False
 
-    # def verifier_identifiants(self, username, password):
-    # # Vérifie les identifiants dans la base de données
-    # query = "SELECT * FROM Employes WHERE code_unique = ? AND password = ?"
-    # parameters = (username, password)
-    # try:
-    #     result = self.db_manager.execute_query(query, parameters)
-    #     if result:
-    #         self.authenticated = True
-    #         # Vous pouvez stocker des informations supplémentaires sur l'utilisateur
-    #         self.utilisateur = result[0]
-    #         return True
-    #     else:
-    #         return False
-    # except sqlite3.Error as e:
-    #     print("Erreur lors de la vérification des identifiants :", e)
-    #     return False
+    def hacher_mot_de_passe(self, mot_de_passe):
+            return hashlib.sha256(mot_de_passe.encode()).hexdigest()
+        
+    def créer_premier_employé(self,username, password):
+        password = self.hacher_mot_de_passe(password)
+        try:
+            self.db_manager.execute_update("""
+                INSERT INTO Employes (prenom, nom, username, mot_de_passe, poste)
+                VALUES (?, ?, ?, ?, ?)
+            """, ("temp", "temp", username, password, "Gérant Global"))
+            
+            self.db_manager.execute_update("""
+                INSERT INTO Succursales (nom)
+                VALUES (?)
+            """, ("temp",))
+            
 
+            db_manager = DatabaseManager('erp_database.db')
+            
+            values = (
+                1, 1, 
+                "09:00", "11:00",
+                "09:00", "11:00",
+                "09:00", "11:00",
+                "09:00", "11:00",
+                "09:00", "11:00"
+            )
+
+            query = """
+                        INSERT INTO Horaires (id_employe, id_succursale, date,
+                                            heure_entree_lundi, heure_sortie_lundi,
+                                            heure_entree_mardi, heure_sortie_mardi,
+                                            heure_entree_mercredi, heure_sortie_mercredi,
+                                            heure_entree_jeudi, heure_sortie_jeudi,
+                                            heure_entree_vendredi, heure_sortie_vendredi, statut)
+                        VALUES (?, ?, date('now'),
+                                ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'actif')
+                    """
+            
+            db_manager.execute_update(query, values)
+            
+        except Exception as e:
+            print(e)
+            
+    def update_mdp(self,username, password):
+        password = self.hacher_mot_de_passe(password)
+        try:
+            self.db_manager.execute_update("""
+                UPDATE Employes
+                SET mot_de_passe = ?
+                WHERE username = ?
+            """, (password, username))
+        except Exception as e:
+            print(e)
+        
+        
+    def get_poste(self, username):
+        resultat = self.db_manager.execute_query("SELECT poste FROM Employes WHERE username = ?", (username,))
+        if resultat:
+            return resultat[0][0]
+        
+    
+    def get_succursales(self, username):
+        # Étape 1: Récupérer l'ID de l'employé à partir du username
+        query = """
+        SELECT id_employe FROM Employes WHERE username = ?
+        """
+        result = self.db_manager.execute_query(query, (username,))
+        
+        if not result:
+            return None  # L'employé avec ce username n'existe pas
+        
+        # Récupérer l'ID de l'employé
+        id_employe = result[0][0]
+        
+        # Étape 2: Récupérer les succursales associées à cet employé via la table Employes_Succursales
+        query = """
+        SELECT Succursales.id_succursale
+        FROM Employes_Succursales
+        JOIN Succursales ON Employes_Succursales.id_succursale = Succursales.id_succursale
+        WHERE Employes_Succursales.id_employe = ?
+        """
+        
+        # Exécuter la requête pour récupérer les succursales de l'employé
+        succursales = self.db_manager.execute_query(query, (id_employe,))
+        
+        if not succursales:
+            return None  # Aucun résultat trouvé, l'employé n'est pas affecté à une succursale
+        
+        succursale = succursales[0][0]
+
+        return succursale
+        
     
     def creer_vente(self, item, quantite, prix_unitaire, date):
         # Simule une requête pour créer une vente
