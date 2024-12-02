@@ -2,9 +2,11 @@
 
 from PySide6.QtWidgets import (
     QWidget, QPushButton, QLabel, QLineEdit, QTableWidget,
-    QTableWidgetItem, QVBoxLayout, QHBoxLayout, QGridLayout, QMessageBox, QDialog, QFormLayout, QComboBox, QSpinBox, QTableWidgetSelectionRange
+    QTableWidgetItem, QVBoxLayout, QHBoxLayout, QGridLayout, QMessageBox, QDialog, QFormLayout, QComboBox, QSpinBox
 )
 from PySide6.QtCore import Qt, Signal
+from ERP_data_base import DatabaseManager
+import sqlite3
 
 class QClient(QWidget):
     def __init__(self, parent, db_manager):
@@ -48,10 +50,13 @@ class QClient(QWidget):
 
         # Tableau des clients
         self.client_table = QTableWidget()
-        self.client_table.setColumnCount(5)  # Code, Facture, Commandes
+        self.client_table.setColumnCount(5)  # Code, Prenom, Nom, Factures, Commandes
         self.client_table.setHorizontalHeaderLabels(
-            ["Code","prenom","nom", "Factures", "Commandes"]
+            ["Code", "Prenom", "Nom", "Factures", "Commandes"]
         )
+        self.client_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.client_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.client_table.setSelectionMode(QTableWidget.SingleSelection)
         layout.addWidget(self.client_table, 2, 1)
 
         self.setLayout(layout)
@@ -96,7 +101,7 @@ class QClient(QWidget):
             QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors du chargement des données : {e}")
 
     def add_client(self):
-        dialog = self.AddModifyClientDialog(self.db_manager, mode="Ajouter")
+        dialog = self.AddModifyDialog(self.db_manager, mode="Ajouter")
         dialog.client_added.connect(self.insert_client_into_db)
         dialog.exec_()
 
@@ -105,7 +110,7 @@ class QClient(QWidget):
         required_fields = ['Nom', 'Prenom', 'Statut']
         for field in required_fields:
             if not data.get(field):
-                QMessageBox.warning(self, "Attention", f"Le champ {field} est obligatoire.")
+                QMessageBox.warning(self, "Attention", f"Le champ '{field}' est obligatoire.")
                 return
 
         # Vérification des types de données si nécessaire
@@ -156,7 +161,7 @@ class QClient(QWidget):
             return
 
         # Ouvrir le dialogue avec les données existantes
-        dialog = self.AddModifyClientDialog(self.db_manager, mode="Modifier", client_data=client_data)
+        dialog = self.AddModifyDialog(self.db_manager, mode="Modifier", client_data=client_data)
         dialog.client_added.connect(lambda data: self.update_client_in_db(client_id, data))
         dialog.exec_()
 
@@ -165,7 +170,7 @@ class QClient(QWidget):
         required_fields = ['Nom', 'Prenom', 'Statut']
         for field in required_fields:
             if not data.get(field):
-                QMessageBox.warning(self, "Attention", f"Le champ {field} est obligatoire.")
+                QMessageBox.warning(self, "Attention", f"Le champ '{field}' est obligatoire.")
                 return
 
         # Vérification des types de données si nécessaire
@@ -233,14 +238,17 @@ class QClient(QWidget):
             else:
                 self.client_table.setRowHidden(row, True)
 
-    # Classes internes pour AddModifyClientDialog, ClientInfoDialog et CreateOrderDialog
-    class AddModifyClientDialog(QDialog):
+    # Classes internes pour AddModifyDialog, ClientInfoDialog et CreateOrderDialog
+    class AddModifyDialog(QDialog):
         client_added = Signal(dict)
 
         def __init__(self, db_manager, mode="Ajouter", client_data=None):
             super().__init__()
             self.db_manager = db_manager
-            self.setWindowTitle(f"{mode} Client")
+            self.mode = mode
+            self.client_data = client_data
+
+            self.setWindowTitle(f"{self.mode} Client")
 
             # Créer la mise en page
             layout = QGridLayout()
@@ -251,7 +259,12 @@ class QClient(QWidget):
 
             for i, label in enumerate(labels):
                 lbl = QLabel(label)
-                input_field = QLineEdit()
+                if label == "Statut":
+                    # Créer un QComboBox pour le champ Statut avec des options prédéfinies
+                    input_field = QComboBox()
+                    input_field.addItems(["Actif", "Inactif"])
+                else:
+                    input_field = QLineEdit()
                 layout.addWidget(lbl, i, 0)
                 layout.addWidget(input_field, i, 1)
                 self.inputs[label] = input_field
@@ -259,6 +272,7 @@ class QClient(QWidget):
             # Boutons 'Ajouter/Modifier' et 'Annuler'
             self.add_modify_button = QPushButton(mode)
             self.cancel_button = QPushButton("Annuler")
+            self.cancel_button.clicked.connect(self.close)
 
             button_layout = QHBoxLayout()
             button_layout.addWidget(self.add_modify_button)
@@ -269,15 +283,15 @@ class QClient(QWidget):
             # Définir la mise en page
             self.setLayout(layout)
 
-            # Connecter le bouton annuler pour fermer le dialogue
-            self.cancel_button.clicked.connect(self.close)
-
-            # Connecter le bouton ajouter/modifier à la méthode confirm_add
-            self.add_modify_button.clicked.connect(self.confirm_add)
+            # Connecter le bouton ajouter/modifier à la méthode appropriée
+            if self.mode == "Ajouter":
+                self.add_modify_button.clicked.connect(self.enregistrer)
+            else:
+                self.add_modify_button.clicked.connect(self.modify_client)
 
             # Si nous sommes en mode "Modifier", pré-remplir les champs
-            if client_data:
-                self.fill_fields(client_data)
+            if self.mode == "Modifier" and self.client_data:
+                self.fill_fields(self.client_data)
 
         def fill_fields(self, client_data):
             self.inputs['Nom'].setText(client_data['nom'] or '')
@@ -285,16 +299,69 @@ class QClient(QWidget):
             self.inputs['Adresse'].setText(client_data['adresse'] or '')
             self.inputs['Telephone'].setText(client_data['telephone'] or '')
             self.inputs['Email'].setText(client_data['email'] or '')
-            self.inputs['Statut'].setText(client_data['statut'] or '')
+            statut = client_data['statut'] or 'Actif'
+            index = self.inputs['Statut'].findText(statut)
+            if index >= 0:
+                self.inputs['Statut'].setCurrentIndex(index)
             self.inputs['Notes'].setText(client_data['notes'] or '')
 
-        def confirm_add(self):
-            data = {label: input_field.text() for label, input_field in self.inputs.items()}
+        def enregistrer(self):
+            data = {}
+            for label, input_field in self.inputs.items():
+                if isinstance(input_field, QComboBox):
+                    data[label] = input_field.currentText()
+                else:
+                    data[label] = input_field.text()
 
-            # Vérification des types de données si nécessaire
+            # Validation des champs obligatoires
+            required_fields = ['Nom', 'Prenom', 'Statut']
+            for field in required_fields:
+                if not data.get(field):
+                    QMessageBox.warning(self, "Attention", f"Le champ '{field}' est obligatoire.")
+                    return
 
+            # Insérer le client dans la base de données
+            try:
+                query = """
+                INSERT INTO Clients (nom, prenom, adresse, telephone, email, date_inscription, statut, notes)
+                VALUES (?, ?, ?, ?, ?, date('now'), ?, ?)
+                """
+                parameters = (
+                    data['Nom'],
+                    data['Prenom'],
+                    data.get('Adresse', ''),
+                    data.get('Telephone', ''),
+                    data.get('Email', ''),
+                    data['Statut'],
+                    data.get('Notes', '')
+                )
+
+                self.db_manager.execute_update(query, parameters)
+                self.client_added.emit(data)  # Émettre le signal pour mettre à jour le tableau
+                self.close()
+            except Exception as e:
+                QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors de l'ajout : {e}")
+
+
+        def modify_client(self):
+            data = {}
+            for label, input_field in self.inputs.items():
+                if isinstance(input_field, QComboBox):
+                    data[label] = input_field.currentText()
+                else:
+                    data[label] = input_field.text()
+
+            # Validation des champs obligatoires
+            required_fields = ['Nom', 'Prenom', 'Statut']
+            for field in required_fields:
+                if not data.get(field):
+                    QMessageBox.warning(self, "Attention", f"Le champ '{field}' est obligatoire.")
+                    return
+
+            # Émettre le signal avec les données modifiées
             self.client_added.emit(data)
             self.close()
+
 
     class ClientInfoDialog(QDialog):
         def __init__(self, db_manager, client_id):
@@ -545,7 +612,10 @@ class QClient(QWidget):
 
                 # Émettre le signal
                 self.order_created.emit({'id_commande': id_commande})
+                QMessageBox.information(self, "Succès", "Commande créée avec succès.")
                 self.close()
 
             except Exception as e:
                 QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors de la création de la commande : {e}")
+
+   
