@@ -16,7 +16,7 @@ class qHRWindow(QWidget):
 
         
         button2 = QPushButton("Commandes")
-        #button2.clicked.connect(parent.basculer_vers_commandes_hr)
+        #button2.clicked.connect(parent.basculer_vers_commandes_hr) a faire
         
         # Back Button
         back_button = QPushButton("<-")
