@@ -9,6 +9,7 @@ from PySide6.QtCore import Qt
 
 from ERP_data_base import DatabaseManager
 from ERP_emplacement import Emplacement
+import re
 
 class AddModifyDialog(QDialog):
     def __init__(self, parent, mode="Ajouter", employee_data=None):
@@ -102,7 +103,7 @@ class AddModifyDialog(QDialog):
             print("Tous les champs doivent être remplis.")
             return
 
-        self.gere_employe.update_employee(self.employee_data[9], values)  # Passer directement les valeurs
+        self.gere_employe.update_employee(self.employee_data[10], values)  # Passer directement les valeurs
         self.close()
 
     def enregistrer(self):
@@ -140,7 +141,10 @@ class AddModifyDialog(QDialog):
 
             if Emplacement.succursalesId != -1: #on est en gérant global    
                 self.succursale = Emplacement.succursalesId
+            else:
+                self.succursale = re.match(r"(\d+)", self.succursale).group(1)
                 
+            print(self.succursale)
             query = f"""
             INSERT INTO Employes_Succursales (id_employe, id_succursale, date_debut)
             VALUES ({self.id},{self.succursale}, date('now'))
@@ -352,7 +356,7 @@ class QGereEmploye(QWidget):
             employee_data = list(result[0])  # Convertir le tuple en liste
             # Supprimer l'ID et le mot de passe
             employee_data.pop(0)  # Enlever l'ID
-            employee_data.pop(9)  # Enlever le mot de passe
+            employee_data.pop(10)  # Enlever le mot de passe
 
         dialog = AddModifyDialog(self, mode="Modifier", employee_data=employee_data)
         dialog.exec_()
@@ -367,6 +371,8 @@ class QGereEmploye(QWidget):
             query = f"UPDATE Employes SET {set_clause} WHERE username = ?"
 
             values = new_values + [old_username_employe]
+            print(query)
+            print(new_values)
 
             self.db_manager.execute_update(query, values)
 

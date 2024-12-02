@@ -40,18 +40,18 @@ class Modele:
     def hacher_mot_de_passe(self, mot_de_passe):
             return hashlib.sha256(mot_de_passe.encode()).hexdigest()
         
-    def créer_premier_employé(self,username, password):
+    def créer_premier_employé(self, username, password):
         password = self.hacher_mot_de_passe(password)
         try:
             self.db_manager.execute_update("""
-                INSERT INTO Employes (prenom, nom, username, mot_de_passe, poste)
-                VALUES (?, ?, ?, ?, ?)
-            """, ("temp", "temp", username, password, "Gérant Global"))
+                INSERT INTO Employes (prenom, nom, username, mot_de_passe, poste, email)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, ("temp", "temp", username, password, "Gérant Global", "temp@gmail.com"))
             
             self.db_manager.execute_update("""
-                INSERT INTO Succursales (nom)
-                VALUES (?)
-            """, ("temp",))
+                INSERT INTO Succursales (nom, email)
+                VALUES (?, ?)
+            """, ("temp", "temp@gmail.com"))
             
 
             db_manager = DatabaseManager('erp_database.db')
@@ -94,7 +94,7 @@ class Modele:
         
         
     def get_poste(self, username):
-        resultat = self.db_manager.execute_query("SELECT poste FROM Employes WHERE prenom = ?", (username,))
+        resultat = self.db_manager.execute_query("SELECT poste FROM Employes WHERE username = ?", (username,))
         if resultat:
             return resultat[0][0]
         
