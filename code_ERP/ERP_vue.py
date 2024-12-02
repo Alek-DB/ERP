@@ -16,6 +16,7 @@ from ERP_vue_dossier.gerer_employe import QGereEmploye
 from ERP_vue_dossier.horaire import QHoraire
 from ERP_vue_dossier.regle_affaire import QRegleAffaire
 from ERP_emplacement import Emplacement
+from ERP_vue_dossier.client import QClient
 
 # La classe Modele reste inchangée
 
@@ -47,6 +48,7 @@ class Vue(QMainWindow):
         self.frame_gerer_employe = QGereEmploye(self)
         self.frame_horaire = QHoraire(self)
         self.frame_regle_affaire = QRegleAffaire(self)
+        self.frame_gerer_client = QClient(self, self.controleur.db_manager)
 
         # Ajout des frames au QStackedWidget
         self.stacked_widget.addWidget(self.frame_connexion)
@@ -62,6 +64,7 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_gerer_employe)
         self.stacked_widget.addWidget(self.frame_horaire)
         self.stacked_widget.addWidget(self.frame_regle_affaire)
+        self.stacked_widget.addWidget(self.frame_gerer_client)
         
         
         self.history = []
@@ -175,5 +178,9 @@ class Vue(QMainWindow):
         self.frame_gerer_employe.load_employe()
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_gerer_employe)
+        
+    def basculer_vers_gerer_client(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_gerer_client)
 
 
