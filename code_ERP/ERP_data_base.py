@@ -356,7 +356,9 @@ class DatabaseManager:
             action TEXT,
             desc TEXT,
             date_send TEXT,
-            statut TEXT
+            statut TEXT,
+            date_debut TEXT,
+            date_fin TEXT
         )
         """)
         

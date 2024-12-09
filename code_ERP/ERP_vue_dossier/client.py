@@ -7,6 +7,8 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, Signal
 from ERP_data_base import DatabaseManager
 import sqlite3
+import ERP_regle_affaire as regle
+from ERP_vue_dossier.rabais import Rabais
 
 class QClient(QWidget):
     def __init__(self, parent, db_manager):
@@ -133,7 +135,6 @@ class QClient(QWidget):
 
         #     self.db_manager.execute_update(query, parameters)
             self.load_data()
-            QMessageBox.information(self, "Succès", "Client ajouté avec succès.")
         # except Exception as e:
         #     QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors de l'ajout : {e}")
 
@@ -225,7 +226,6 @@ class QClient(QWidget):
         dialog.exec_()
 
     def on_order_created(self, data):
-        QMessageBox.information(self, "Succès", "Commande créée avec succès.")
         # Mettre à jour les données si nécessaire
         self.load_data()
 
@@ -456,6 +456,15 @@ class QClient(QWidget):
             self.db_manager = db_manager
             self.client_id = client_id
             self.setWindowTitle("Créer Commande")
+            
+            
+            self.all_rabais = regle.verify_regles(self.db_manager, client_id)
+            if self.all_rabais: 
+                text = ""
+                for rabais in self.all_rabais:
+                    text += rabais.title + "\n"
+                QMessageBox.warning(self, "Attention", text)
+            
 
             layout = QVBoxLayout()
 
@@ -481,7 +490,7 @@ class QClient(QWidget):
             product_label = QLabel("Produit :")
             self.product_combo = QComboBox()
             produits = self.get_produits()
-            self.product_combo.addItems([f"{p['id_produit']} - {p['nom_produit']}" for p in produits])
+            self.product_combo.addItems([f"{p['id_produit']} - {p['nom_produit']} - {p['prix']}" for p in produits])
             product_layout.addWidget(product_label)
             product_layout.addWidget(self.product_combo)
 
@@ -515,11 +524,14 @@ class QClient(QWidget):
             self.create_order_button.clicked.connect(self.confirm_create_order)
             self.cancel_button.clicked.connect(self.close)
 
+            self.total_commande = 0
+            self.panier_total = QLabel(f"Panier : {self.total_commande}$")
+
             # Agencer les widgets
             layout.addLayout(product_layout)
             layout.addLayout(quantity_layout)
             layout.addWidget(add_product_button)
-            layout.addWidget(QLabel("Panier :"))
+            layout.addWidget(self.panier_total)
             layout.addWidget(self.cart_table)
             layout.addLayout(button_layout)
 
@@ -539,6 +551,7 @@ class QClient(QWidget):
             return results
 
         def add_product_to_cart(self):
+            
             product_text = self.product_combo.currentText()
             product_id = int(product_text.split(' - ')[0])
             product_name = ' - '.join(product_text.split(' - ')[1:])
@@ -552,6 +565,19 @@ class QClient(QWidget):
             else:
                 QMessageBox.warning(self, "Erreur", "Produit non trouvé.")
                 return
+            
+            self.total_commande += prix_unitaire
+            self.prix_afficher = self.total_commande
+            # regrde si les rabais s'applique
+            for rabais in self.all_rabais:
+                has_rabais = eval(f"{self.prix_afficher} {rabais.operateur} {rabais.value}")
+                if has_rabais: 
+                    self.prix_afficher -= self.prix_afficher * (rabais.rabais / 100)
+                    
+            if self.all_rabais: 
+                self.panier_total.setText(f"Panier : { max(0,round((self.prix_afficher), 2)) }$")
+            else : self.panier_total.setText(f"Panier : {self.total_commande}$")
+            
 
             # Ajouter au panier
             self.cart_items.append({
@@ -579,8 +605,15 @@ class QClient(QWidget):
 
             try:
                 # Calculer le total de la commande
-                total_commande = sum(item['quantite'] * item['prix_unitaire'] for item in self.cart_items)
 
+                prix_final = self.total_commande
+                for rabais in self.all_rabais:
+                    has_rabais = eval(f"{prix_final} {rabais.operateur} {rabais.value}")
+                    if has_rabais: 
+                        prix_final -= prix_final * (rabais.rabais / 100)
+                
+                if self.all_rabais :  self.total_commande = max(0,round(prix_final,2))
+                
                 # Insérer la commande
                 query_commande = """
                 INSERT INTO Commandes (id_client, date_commande, statut, total)
@@ -589,7 +622,7 @@ class QClient(QWidget):
                 parameters_commande = (
                     self.client_id,
                     'En cours',
-                    total_commande
+                    self.total_commande
                 )
                 self.db_manager.execute_update(query_commande, parameters_commande)
                 id_commande = self.db_manager.cursor.lastrowid

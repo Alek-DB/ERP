@@ -14,7 +14,6 @@ class QGerant(QWidget):
         # Titre de la fenêtre
         self.setWindowTitle("Gérant")
         
-        
         button1 = QPushButton("Stock")
         button1.clicked.connect(parent.basculer_vers_stock)
         button2 = QPushButton("Finance")

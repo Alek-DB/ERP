@@ -63,8 +63,6 @@ class QHoraire(QWidget):
     def load_horaires(self):
         """Récupérer les horaires de l'employé et de la succursale depuis la base de données et les afficher."""
         
-        print("récupération des horaires")
-        
         try:
             db_manager = DatabaseManager('erp_database.db')
 
@@ -79,7 +77,6 @@ class QHoraire(QWidget):
                 WHERE id_employe = ? 
             """
             
-            print((Emplacement.employeHoraire))
             result = db_manager.execute_query(query, (int(Emplacement.employeHoraire),))
 
             if result:

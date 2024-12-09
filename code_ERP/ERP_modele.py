@@ -127,7 +127,6 @@ class Modele:
             return None  # Aucun résultat trouvé, l'employé n'est pas affecté à une succursale
         
         succursale = succursales[0][0]
-        print(succursale)
 
         return succursale
         
