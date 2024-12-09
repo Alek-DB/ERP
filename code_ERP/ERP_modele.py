@@ -99,6 +99,39 @@ class Modele:
             return resultat[0][0]
         
     
+    def get_succursales(self, username):
+        # Étape 1: Récupérer l'ID de l'employé à partir du username
+        query = """
+        SELECT id_employe FROM Employes WHERE username = ?
+        """
+        result = self.db_manager.execute_query(query, (username,))
+        
+        if not result:
+            return None  # L'employé avec ce username n'existe pas
+        
+        # Récupérer l'ID de l'employé
+        id_employe = result[0][0]
+        
+        # Étape 2: Récupérer les succursales associées à cet employé via la table Employes_Succursales
+        query = """
+        SELECT Succursales.id_succursale
+        FROM Employes_Succursales
+        JOIN Succursales ON Employes_Succursales.id_succursale = Succursales.id_succursale
+        WHERE Employes_Succursales.id_employe = ?
+        """
+        
+        # Exécuter la requête pour récupérer les succursales de l'employé
+        succursales = self.db_manager.execute_query(query, (id_employe,))
+        
+        if not succursales:
+            return None  # Aucun résultat trouvé, l'employé n'est pas affecté à une succursale
+        
+        succursale = succursales[0][0]
+        print(succursale)
+
+        return succursale
+        
+    
     def creer_vente(self, item, quantite, prix_unitaire, date):
         # Simule une requête pour créer une vente
         vente_data = {

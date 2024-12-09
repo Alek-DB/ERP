@@ -8,6 +8,7 @@ from ERP_modele import Modele
 from ERP_vue import Vue
 from ERP_data_base import DatabaseManager
 import ERP_regle_affaire as regle
+import ERP_role as role
 
 
 
@@ -39,13 +40,23 @@ class Controleur:
             #verifier les regles d'affaire
             regle.verify_regles(self.db_manager)
             
+            sucursale = self.modele.get_succursales(username) #bascule selon le sucursale
+            print(sucursale)
+
             poste = self.modele.get_poste(username) #basculer selon poste
+            print(poste)
             
-            if poste == "Gérant global":pass
-            elif poste == "Employé":pass
-            elif poste == "Gérant":pass
-            
-            self.vue.basculer_vers_splash()  
+            value = list(role.roles.values())
+            print(value)
+
+            if poste == value[1]:
+                self.vue.basculer_vers_gerant_global()
+            elif poste == value[4]:
+                self.vue.basculer_vers_splash()  
+            elif poste == value[2]:
+                sucursale = self.modele.get_succursales(username)
+                self.vue.basculer_vers_gerant(sucursale)            
+#           self.vue.basculer_vers_splash()  
             
         elif state == "bad":    # employé existe mais mauvais mot de passe
             self.vue.afficher_message("Erreur", "Mot de passe incorrect.")
@@ -90,10 +101,12 @@ class Controleur:
             self.vue.basculer_vers_produit()
         elif action == "fournisseur":
             self.vue.basculer_vers_fournisseur()
-        elif action == "succursale":
-            self.vue.basculer_vers_succursale()
-        elif action == "gérant global":
-            self.vue.basculer_vers_gerant_global()
+        elif action == "finance":
+            self.vue.basculer_vers_finance()
+        # elif action == "succursale":
+        #     self.vue.basculer_vers_succursale()
+        # elif action == "gérant global":
+        #     self.vue.basculer_vers_gerant_global()
             
     def demarrer(self):
         self.vue.show()
@@ -105,7 +118,7 @@ if __name__ == "__main__":
         db_manager = DatabaseManager('erp_database.db')
 
 
-        #Requête SQL pour récupérer tous les employés
+        # #Requête SQL pour récupérer tous les employés
 
         # query = "SELECT id_employe, nom, prenom, username, poste FROM Employes"
         # results = db_manager.execute_query(query)
@@ -150,8 +163,6 @@ if __name__ == "__main__":
         # db_manager.execute_update("DROP TABLE IF EXISTS Clients")
         # db_manager.execute_update("DROP TABLE IF EXISTS Fournisseurs")
         # db_manager.execute_update("DROP TABLE IF EXISTS Regle_affaires")
-
-
     except sqlite3.Error as e:
         QMessageBox.critical(None, "Erreur", f"Une erreur est survenue lors de l'initialisation de la base de données : {e}")
 

@@ -22,6 +22,11 @@ from ERP_vue_dossier.client import QClient
 
 from ERP_vue_dossier.produit import QProduit
 from ERP_vue_dossier.fournisseur import QFournisseur
+from ERP_vue_dossier.finance import QFinance
+from ERP_vue_dossier.rapport_finance import QFinanceReport
+from ERP_vue_dossier.rapport_finance_fournisseur import QFinanceFournisseurReport
+from ERP_vue_dossier.commande_fournisseur import QCommandeFournisseur
+
 
 
 class Vue(QMainWindow):
@@ -42,6 +47,11 @@ class Vue(QMainWindow):
         self.frame_greant_global = QGerantGlobal(self)
         self.frame_succursale = QSuccursale(self)
         self.frame_fournisseur = QFournisseur(self, self.controleur.db_manager)
+        self.frame_finance = QFinance(self)
+        self.frame_finance_report = QFinanceReport(self, self.controleur.db_manager)
+        self.frame_fournisseur_report = QFinanceFournisseurReport(self, self.controleur.db_manager)
+        self.frame_fournisseur_commande = QCommandeFournisseur(self, self.controleur.db_manager)
+
         self.frame_gerant = QGerant(self)
         self.frame_ajouter_employe = QAddEmploye(self)
         self.frame_ajout_champ = QAjoutChamp(self)
@@ -56,6 +66,16 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_stock)
         self.stacked_widget.addWidget(self.frame_greant_global)
         self.stacked_widget.addWidget(self.frame_succursale)
+        self.stacked_widget.addWidget(self.frame_finance)
+
+        self.stacked_widget.addWidget(self.frame_produit)
+        self.stacked_widget.addWidget(self.frame_fournisseur)
+        self.stacked_widget.addWidget(self.frame_finance_report)
+        self.stacked_widget.addWidget(self.frame_fournisseur_report)
+        self.stacked_widget.addWidget(self.frame_fournisseur_commande)
+
+
+
         self.stacked_widget.addWidget(self.frame_gerant)
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
@@ -91,13 +111,18 @@ class Vue(QMainWindow):
         self.button_produit.clicked.connect(lambda: self.controleur.action_splash("produit"))
         self.button_fournisseur = QPushButton("Fournisseur")
         self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("fournisseur"))
-        self.button_gerant_global = QPushButton("Gérant global")
-        self.button_gerant_global.clicked.connect(lambda: self.controleur.action_splash("gérant global"))
-        
+        self.button_finance = QPushButton("Finance")
+        self.button_finance.clicked.connect(lambda: self.controleur.action_splash("finance"))
+
         buttons_layout.addWidget(self.button_stock)
         buttons_layout.addWidget(self.button_produit)
         buttons_layout.addWidget(self.button_fournisseur)
-        buttons_layout.addWidget(self.button_gerant_global)
+        buttons_layout.addWidget(self.button_finance)  
+        self.button_gerant_global = QPushButton("Gérant global")
+        self.button_gerant_global.clicked.connect(lambda: self.controleur.action_splash("gérant global"))
+        
+       
+        # buttons_layout.addWidget(self.button_gerant_global)
 
         layout.addLayout(buttons_layout)
 
@@ -125,19 +150,48 @@ class Vue(QMainWindow):
         self.history.append(self.stacked_widget.currentWidget())
         self.frame_succursale.load_succursale()
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
+        
 
     def basculer_vers_produit(self):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_produit)
+
+
         
     def basculer_vers_gerant_global(self):
         Emplacement.succursalesId = -1
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
 
+    def basculer_vers_ajout_succursale(self, ajout):
+        if ajout:
+            self.frame_ajout_succursale.set_to_ajout()
+        else:
+            self.frame_ajout_succursale.set_to_modif()
+        self.stacked_widget.setCurrentWidget(self.frame_ajout_succursale)
+
+
     def basculer_vers_fournisseur(self):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur)
+        
+    def basculer_vers_finance(self):
+        self.stacked_widget.setCurrentWidget(self.frame_finance)
+        
+    def basculer_vers_finance_report(self):
+        self.frame_finance_report.set_financial_data()
+        self.stacked_widget.setCurrentWidget(self.frame_finance_report)
+        
+    def basculer_vers_fournisseur_report(self):
+        self.stacked_widget.setCurrentWidget(self.frame_fournisseur_report)
+        
+    def basculer_vers_fournisseur_commandes(self):
+        self.stacked_widget.setCurrentWidget(self.frame_fournisseur_commande)
+
+
+    # Méthodes pour obtenir les informations saisies par l'utilisateur
+    def obtenir_identifiants(self):
+        return self.entry_username.text(), self.entry_password.text()
     
     def basculer_vers_ajouter_employer(self):
         self.history.append(self.stacked_widget.currentWidget())
