@@ -267,6 +267,7 @@ class QGereEmploye(QWidget):
         back_button.clicked.connect(self.vue.basculer_before)
 
     def load_employe(self):
+        print(Emplacement.succursalesId)
         try:
             db_manager = DatabaseManager('erp_database.db')
             if Emplacement.succursalesId != -1:
