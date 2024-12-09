@@ -27,7 +27,8 @@ def verify_regles(db_manager):
                             envoyer_email(email[0], message)
                     else: 
                         result = db_manager.execute_query(f"SELECT email FROM {table} WHERE {champ} = '{valeur}'",())
-                        envoyer_email(result[0][0], message)
+                        if result:
+                            envoyer_email(result[0][0], message)
                     
                     if statut == "pending":
                         db_manager.execute_update(f"UPDATE Regle_affaires SET statut = 'done' WHERE id_regle_affaire = {id}", ())
