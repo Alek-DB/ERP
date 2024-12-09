@@ -116,10 +116,10 @@ class Controleur:
             self.vue.basculer_vers_hr()
         # HR Commandes
         elif action == "hr commandes":
-            self.vue.basculer_vers_hr_commandes()    
+            self.vue.basculer_vers_commandes_hr()    
         # HR Commandes
         elif action == "hr employes":
-            self.vue.basculer_vers_hr_employes()  
+            self.vue.basculer_vers_employes_hr()  
             
     def demarrer(self):
         self.vue.show()
