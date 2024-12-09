@@ -107,35 +107,35 @@ class QClient(QWidget):
 
     def insert_client_into_db(self, data):
         # Validation des données
-        required_fields = ['Nom', 'Prenom', 'Statut']
-        for field in required_fields:
-            if not data.get(field):
-                QMessageBox.warning(self, "Attention", f"Le champ '{field}' est obligatoire.")
-                return
+        # required_fields = ['Nom', 'Prenom', 'Statut']
+        # for field in required_fields:
+        #     if not data.get(field):
+        #         QMessageBox.warning(self, "Attention", f"Le champ '{field}' est obligatoire.")
+        #         return
 
-        # Vérification des types de données si nécessaire
+        # # Vérification des types de données si nécessaire
 
-        # Insérer le client dans la base de données
-        try:
-            query = """
-            INSERT INTO Clients (nom, prenom, adresse, telephone, email, date_inscription, statut, notes)
-            VALUES (?, ?, ?, ?, ?, date('now'), ?, ?)
-            """
-            parameters = (
-                data['Nom'],
-                data['Prenom'],
-                data.get('Adresse', ''),
-                data.get('Telephone', ''),
-                data.get('Email', ''),
-                data['Statut'],
-                data.get('Notes', '')
-            )
+        # # Insérer le client dans la base de données
+        # try:
+        #     query = """
+        #     INSERT INTO Clients (nom, prenom, adresse, telephone, email, date_inscription, statut, notes)
+        #     VALUES (?, ?, ?, ?, ?, date('now'), ?, ?)
+        #     """
+        #     parameters = (
+        #         data['Nom'],
+        #         data['Prenom'],
+        #         data.get('Adresse', ''),
+        #         data.get('Telephone', ''),
+        #         data.get('Email', ''),
+        #         data['Statut'],
+        #         data.get('Notes', '')
+        #     )
 
-            self.db_manager.execute_update(query, parameters)
+        #     self.db_manager.execute_update(query, parameters)
             self.load_data()
             QMessageBox.information(self, "Succès", "Client ajouté avec succès.")
-        except Exception as e:
-            QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors de l'ajout : {e}")
+        # except Exception as e:
+        #     QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors de l'ajout : {e}")
 
     def modify_client(self):
         selected_items = self.client_table.selectedItems()
