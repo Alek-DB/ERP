@@ -105,53 +105,6 @@ class Vue(QMainWindow):
         # Affichage initial
         self.basculer_vers_connexion()
 
-    def creer_frame_vente(self):
-        widget = QWidget()
-        layout = QVBoxLayout()
-
-        titre = QLabel("Enregistrement des ventes")
-        titre.setAlignment(Qt.AlignCenter)
-        titre.setStyleSheet("font-size: 18px; font-weight: bold;")
-        layout.addWidget(titre)
-
-        explication = QLabel("Veuillez remplir les champs ci-dessous pour enregistrer une nouvelle vente.")
-        explication.setWordWrap(True)
-        layout.addWidget(explication)
-
-        form_layout = QGridLayout()
-        self.entry_item = QLineEdit()
-        self.entry_quantite = QLineEdit()
-        self.entry_prix = QLineEdit()
-        self.entry_date = QLineEdit()
-
-        form_layout.addWidget(QLabel("Article"), 0, 0)
-        form_layout.addWidget(self.entry_item, 0, 1)
-        form_layout.addWidget(QLabel("Quantité"), 1, 0)
-        form_layout.addWidget(self.entry_quantite, 1, 1)
-        form_layout.addWidget(QLabel("Prix Unitaire"), 2, 0)
-        form_layout.addWidget(self.entry_prix, 2, 1)
-        form_layout.addWidget(QLabel("Date"), 3, 0)
-        form_layout.addWidget(self.entry_date, 3, 1)
-
-        layout.addLayout(form_layout)
-
-        buttons_layout = QHBoxLayout()
-        self.button_enregistrer_vente = QPushButton("Accepter vente")
-        self.button_enregistrer_vente.clicked.connect(self.controleur.enregistrer_vente)
-        self.button_annuler = QPushButton("Annuler")
-        self.button_annuler.clicked.connect(self.controleur.annuler_vente)
-        
-        buttons_layout.addWidget(self.button_enregistrer_vente)
-        buttons_layout.addWidget(self.button_annuler)
-        
-        layout.addLayout(buttons_layout)
-
-        widget.setLayout(layout)
-        return widget
-    
-    
-
-
     def creer_frame_splash(self):
         widget = QWidget()
         layout = QVBoxLayout()
@@ -266,6 +219,7 @@ class Vue(QMainWindow):
         self.history.append(self.stacked_widget.currentWidget())
         Emplacement.succursalesId = id
         self.stacked_widget.setCurrentWidget(self.frame_gerant)
+        
     # vers hr    
     def basculer_vers_hr(self):
         self.history.append(self.stacked_widget.currentWidget())
