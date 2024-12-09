@@ -8,6 +8,7 @@ from ERP_modele import Modele
 from ERP_vue import Vue
 from ERP_data_base import DatabaseManager
 import ERP_regle_affaire as regle
+import ERP_role as role
 
 
 
@@ -44,16 +45,17 @@ class Controleur:
 
             poste = self.modele.get_poste(username) #basculer selon poste
             print(poste)
-
-            if poste == "Gérant Global":
-                self.vue.basculer_vers_gerant_global()
-            elif poste == "Employé":
-                self.vue.basculer_vers_splash()  
-            elif poste == "Gérant":
-                sucursale = self.modele.get_succursales(username)
-                self.vue.basculer_vers_gerant(sucursale)
-
             
+            value = list(role.roles.values())
+            print(value)
+
+            if poste == value[1]:
+                self.vue.basculer_vers_gerant_global()
+            elif poste == value[4]:
+                self.vue.basculer_vers_splash()  
+            elif poste == value[2]:
+                sucursale = self.modele.get_succursales(username)
+                self.vue.basculer_vers_gerant(sucursale)            
 #           self.vue.basculer_vers_splash()  
             
         elif state == "bad":    # employé existe mais mauvais mot de passe
@@ -118,22 +120,26 @@ if __name__ == "__main__":
 
         # #Requête SQL pour récupérer tous les employés
 
-        query = "SELECT id_employe, nom, prenom, username, poste FROM Employes"
-        results = db_manager.execute_query(query)
+        # query = "SELECT id_employe, nom, prenom, username, poste FROM Employes"
+        # results = db_manager.execute_query(query)
 
-        if results:
-            # Affichage des résultats dans la console avec print
-            print(f"{'id':<20} {'Nom':<20} {'Prénom':<20} {'Username':<20} {'Poste':<20}")
-            print("-" * 80)  # Séparateur pour améliorer la lisibilité
-            for row in results:
-                id, nom, prenom, username, poste = row
-                print(f"{id:<20} {nom:<20} {prenom:<20} {username:<20} {poste:<20}")
+        # if results:
+        #     # Affichage des résultats dans la console avec print
+        #     print(f"{'id':<20} {'Nom':<20} {'Prénom':<20} {'Username':<20} {'Poste':<20}")
+        #     print("-" * 80)  # Séparateur pour améliorer la lisibilité
+        #     for row in results:
+        #         id, nom, prenom, username, poste = row
+        #         print(f"{id:<20} {nom:<20} {prenom:<20} {username:<20} {poste:<20}")
 
-        else:
-            print("Aucun employé trouvé dans la base de données.")
+        # else:
+        #     print("Aucun employé trouvé dans la base de données.")
+            
+            
+            
+            
         
             
-        # Supprimer toutes les lignes de la table
+        # # Supprimer toutes les lignes de la table
         # db_manager.execute_update("DELETE FROM Horaires")
         # db_manager.execute_update("DELETE FROM Employes_Succursales")
         # db_manager.execute_update("DELETE FROM Succursales")
@@ -148,40 +154,15 @@ if __name__ == "__main__":
         # print(f"Le compteur AUTOINCREMENT de la table Employes a été réinitialisé à 0.")
         
 
-
-
-
-
         # # Étape 1: Désactiver la vérification des clés étrangères
         # db_manager.execute_update("PRAGMA foreign_keys=OFF")
 
         # # Étape 2: Supprimer la table existante si elle existe
         # db_manager.execute_update("DROP TABLE IF EXISTS Employes")
-        
-        # db_manager.execute_update("DROP TABLE IF EXISTS Horaires")
-
-
-        # # Étape 3: Créer la nouvelle table Employes
-        # db_manager.execute_update('''
-        #     CREATE TABLE IF NOT EXISTS Employes (
-        #         id_employe INTEGER PRIMARY KEY AUTOINCREMENT,
-        #         prenom TEXT NOT NULL,
-        #         nom TEXT NOT NULL,
-        #         poste TEXT,
-        #         salaire REAL,
-        #         date_naissance TEXT,
-        #         date_embauche TEXT,
-        #         sexe TEXT CHECK(sexe IN ('M', 'F')),
-        #         statut TEXT,
-        #         allergies_preferences_alimentaires TEXT,
-        #         mot_de_passe TEXT,
-        #         username TEXT NOT NULL UNIQUE
-        #     )
-        # ''')
-
-        # # Étape 4: Réactiver la vérification des clés étrangères
-        # db_manager.execute_update("PRAGMA foreign_keys=ON")
-
+        # db_manager.execute_update("DROP TABLE IF EXISTS Succursales")
+        # db_manager.execute_update("DROP TABLE IF EXISTS Clients")
+        # db_manager.execute_update("DROP TABLE IF EXISTS Fournisseurs")
+        # db_manager.execute_update("DROP TABLE IF EXISTS Regle_affaires")
     except sqlite3.Error as e:
         QMessageBox.critical(None, "Erreur", f"Une erreur est survenue lors de l'initialisation de la base de données : {e}")
 
