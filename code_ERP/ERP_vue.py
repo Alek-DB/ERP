@@ -91,8 +91,6 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_hr_employe)
         
 
-        self.stacked_widget.addWidget(self.frame_produit)
-        self.stacked_widget.addWidget(self.frame_fournisseur)
         self.stacked_widget.addWidget(self.frame_ajouter_employe)
         self.stacked_widget.addWidget(self.frame_ajout_champ)
         self.stacked_widget.addWidget(self.frame_gerer_employe)
