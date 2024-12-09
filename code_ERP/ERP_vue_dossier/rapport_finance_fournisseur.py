@@ -21,7 +21,7 @@ class QFinanceFournisseurReport(QWidget):
         # Bouton de retour
         back_button = QPushButton("<-")
         back_button.setStyleSheet("background-color: #f0a500; font-weight: bold;")
-        back_button.clicked.connect(self.go_back.emit)
+        back_button.clicked.connect(parent.basculer_before)
         layout.addWidget(back_button, alignment=Qt.AlignLeft)
 
         # Titre

@@ -44,17 +44,14 @@ class Controleur:
             print(sucursale)
 
             poste = self.modele.get_poste(username) #basculer selon poste
-            print(poste)
             
             value = list(role.roles.values())
-            print(value)
 
             if poste == value[1]:
                 self.vue.basculer_vers_gerant_global()
             elif poste == value[4]:
-                self.vue.basculer_vers_splash()  
+                self.vue.basculer_vers_employe(sucursale)  
             elif poste == value[2]:
-                sucursale = self.modele.get_succursales(username)
                 self.vue.basculer_vers_gerant(sucursale)            
 #           self.vue.basculer_vers_splash()  
             

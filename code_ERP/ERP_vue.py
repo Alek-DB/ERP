@@ -9,6 +9,7 @@ from ERP_vue_dossier.gerant_global import QGerantGlobal
 from ERP_vue_dossier.succursale import QSuccursale
 from ERP_vue_dossier.stock import QStock
 from ERP_vue_dossier.gerant import QGerant
+from ERP_vue_dossier.employe import QEmploye
 from ERP_vue_dossier.connexion import QConnexion
 from ERP_vue_dossier.add_employe import QAddEmploye
 from ERP_vue_dossier.ajout_champ import QAjoutChamp
@@ -53,6 +54,7 @@ class Vue(QMainWindow):
         self.frame_fournisseur_commande = QCommandeFournisseur(self, self.controleur.db_manager)
 
         self.frame_gerant = QGerant(self)
+        self.frame_employe = QEmploye(self)
         self.frame_ajouter_employe = QAddEmploye(self)
         self.frame_ajout_champ = QAjoutChamp(self)
         self.frame_gerer_employe = QGereEmploye(self)
@@ -77,6 +79,7 @@ class Vue(QMainWindow):
 
 
         self.stacked_widget.addWidget(self.frame_gerant)
+        self.stacked_widget.addWidget(self.frame_employe)
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
         self.stacked_widget.addWidget(self.frame_ajouter_employe)
@@ -176,16 +179,20 @@ class Vue(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur)
         
     def basculer_vers_finance(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_finance)
         
     def basculer_vers_finance_report(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.frame_finance_report.set_financial_data()
         self.stacked_widget.setCurrentWidget(self.frame_finance_report)
         
     def basculer_vers_fournisseur_report(self):
+        self.history.append(self.stacked_widget.currentWidget())        
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur_report)
         
     def basculer_vers_fournisseur_commandes(self):
+        self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur_commande)
 
 
@@ -201,6 +208,11 @@ class Vue(QMainWindow):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_regle_affaire)
     
+    def basculer_vers_employe(self, id): # baculer vers la succursale
+        self.history.append(self.stacked_widget.currentWidget())
+        Emplacement.succursalesId = id
+        self.stacked_widget.setCurrentWidget(self.frame_employe)
+        
     def basculer_vers_gerant(self, id): # baculer vers la succursale
         self.history.append(self.stacked_widget.currentWidget())
         Emplacement.succursalesId = id

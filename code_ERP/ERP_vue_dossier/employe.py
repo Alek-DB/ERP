@@ -4,7 +4,7 @@ from PySide6.QtCore import Qt
 from ERP_emplacement import Emplacement
 
 
-class QGerant(QWidget):
+class QEmploye(QWidget):
     def __init__(self, parent):
         super().__init__()
         
@@ -15,27 +15,11 @@ class QGerant(QWidget):
         self.setWindowTitle("Gérant")
         
         
-        button1 = QPushButton("Stock")
-        button1.clicked.connect(parent.basculer_vers_stock)
-        button2 = QPushButton("Finance")
-        button2.clicked.connect(parent.basculer_vers_finance)
-        button3 = QPushButton("HR")
-        button4 = QPushButton("Gérer employé")
+
         button5 = QPushButton("Gérer client")
-        button6 = QPushButton("Fournisseur")
-
-        button4.clicked.connect(parent.basculer_vers_gerer_employe)
         button5.clicked.connect(parent.basculer_vers_gerer_client)
-        button6.clicked.connect(parent.basculer_vers_fournisseur)
-
         button_layout = QHBoxLayout()
-        button_layout.addWidget(button1)
-        button_layout.addWidget(button2)
-        button_layout.addWidget(button3)
-        button_layout.addWidget(button4)
         button_layout.addWidget(button5)
-        button_layout.addWidget(button6)
-        
         
         back_button = QPushButton("<-")
         back_button.clicked.connect(parent.basculer_before)

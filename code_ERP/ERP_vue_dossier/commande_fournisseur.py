@@ -100,6 +100,8 @@ class QCommandeFournisseur(QWidget):
         
         modify_button = QPushButton("Modifier")
         back_button = QPushButton("<-")
+        back_button.clicked.connect(parent.basculer_before)
+
         
         button_layout = QVBoxLayout()
         button_layout.addWidget(back_button)
