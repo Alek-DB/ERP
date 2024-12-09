@@ -330,18 +330,22 @@ class QProduit(QWidget):
                 self.produit_table.setItem(row_number, 0, QTableWidgetItem(str(row_data['id_produit'])))
                 self.produit_table.setItem(row_number, 1, QTableWidgetItem(row_data['nom_produit']))
                 self.produit_table.setItem(row_number, 2, QTableWidgetItem(str(row_data['prix'])))
+                self.produit_table.setItem(row_number, 3, QTableWidgetItem(str(row_data['description'])))
+                self.produit_table.setItem(row_number, 4, QTableWidgetItem(str(row_data['qte_actuelle'])))
+                self.produit_table.setItem(row_number, 5, QTableWidgetItem(str(row_data['qte_min_restock'])))
+                
 
-                description = row_data['description'] or ''
-                self.produit_table.setItem(row_number, 3, QTableWidgetItem(description))
+                # description = row_data['description'] or ''
+                # self.produit_table.setItem(row_number, 3, QTableWidgetItem(description))
 
-                qte_max = row_data['qte_max'] if row_data['qte_max'] is not None else ''
-                self.produit_table.setItem(row_number, 4, QTableWidgetItem(str(qte_max)))
+                # qte_max = row_data['qte_max'] if row_data['qte_max'] is not None else ''
+                # self.produit_table.setItem(row_number, 4, QTableWidgetItem(str(qte_max)))
 
-                qte_actuelle = row_data['qte_actuelle'] if row_data['qte_actuelle'] is not None else ''
-                self.produit_table.setItem(row_number, 5, QTableWidgetItem(str(qte_actuelle)))
+                # qte_actuelle = row_data['qte_actuelle'] if row_data['qte_actuelle'] is not None else ''
+                # self.produit_table.setItem(row_number, 5, QTableWidgetItem(str(qte_actuelle)))
 
-                qte_min_restock = row_data['qte_min_restock'] if row_data['qte_min_restock'] is not None else ''
-                self.produit_table.setItem(row_number, 6, QTableWidgetItem(str(qte_min_restock)))
+                # qte_min_restock = row_data['qte_min_restock'] if row_data['qte_min_restock'] is not None else ''
+                # self.produit_table.setItem(row_number, 6, QTableWidgetItem(str(qte_min_restock)))
 
         except Exception as e:
             QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors du chargement des données : {e}")

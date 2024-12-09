@@ -14,15 +14,22 @@ from ERP_vue_dossier.add_employe import QAddEmploye
 from ERP_vue_dossier.ajout_champ import QAjoutChamp
 from ERP_vue_dossier.gerer_employe import QGereEmploye
 from ERP_vue_dossier.horaire import QHoraire
+from ERP_vue_dossier.regle_affaire import QRegleAffaire
 from ERP_emplacement import Emplacement
 from ERP_vue_dossier.hr import qHRWindow
 from ERP_vue_dossier.commandes_hr import CommandesHRWindow
 from ERP_vue_dossier.employe_hr import EmployeHRWindow
+from ERP_vue_dossier.client import QClient
 
 # La classe Modele reste inchangée
 
 from ERP_vue_dossier.produit import QProduit
 from ERP_vue_dossier.fournisseur import QFournisseur
+from ERP_vue_dossier.finance import QFinance
+from ERP_vue_dossier.rapport_finance import QFinanceReport
+from ERP_vue_dossier.rapport_finance_fournisseur import QFinanceFournisseurReport
+from ERP_vue_dossier.commande_fournisseur import QCommandeFournisseur
+
 
 
 class Vue(QMainWindow):
@@ -37,13 +44,17 @@ class Vue(QMainWindow):
 
         # Création des différents frames
         self.frame_connexion = QConnexion(self)
-        self.frame_vente = self.creer_frame_vente()
         self.frame_stock = QStock(self)
         self.frame_produit = QProduit(self, self.controleur.db_manager)
         self.frame_splash = self.creer_frame_splash()
         self.frame_greant_global = QGerantGlobal(self)
         self.frame_succursale = QSuccursale(self)
         self.frame_fournisseur = QFournisseur(self, self.controleur.db_manager)
+        self.frame_finance = QFinance(self)
+        self.frame_finance_report = QFinanceReport(self, self.controleur.db_manager)
+        self.frame_fournisseur_report = QFinanceFournisseurReport(self, self.controleur.db_manager)
+        self.frame_fournisseur_commande = QCommandeFournisseur(self, self.controleur.db_manager)
+
         self.frame_gerant = QGerant(self)
         self.frame_ajouter_employe = QAddEmploye(self)
         self.frame_ajout_champ = QAjoutChamp(self)
@@ -54,14 +65,25 @@ class Vue(QMainWindow):
         self.frame_hr_employe = EmployeHRWindow(self)
         self.frame_gerer_employe = QGereEmploye(self)
         self.frame_horaire = QHoraire(self)
+        self.frame_regle_affaire = QRegleAffaire(self)
+        self.frame_gerer_client = QClient(self, self.controleur.db_manager)
 
         # Ajout des frames au QStackedWidget
         self.stacked_widget.addWidget(self.frame_connexion)
         self.stacked_widget.addWidget(self.frame_splash)
-        self.stacked_widget.addWidget(self.frame_vente)
         self.stacked_widget.addWidget(self.frame_stock)
         self.stacked_widget.addWidget(self.frame_greant_global)
         self.stacked_widget.addWidget(self.frame_succursale)
+        self.stacked_widget.addWidget(self.frame_finance)
+
+        self.stacked_widget.addWidget(self.frame_produit)
+        self.stacked_widget.addWidget(self.frame_fournisseur)
+        self.stacked_widget.addWidget(self.frame_finance_report)
+        self.stacked_widget.addWidget(self.frame_fournisseur_report)
+        self.stacked_widget.addWidget(self.frame_fournisseur_commande)
+
+
+
         self.stacked_widget.addWidget(self.frame_gerant)
         # Frame HR
         self.stacked_widget.addWidget(self.frame_hr)
@@ -75,6 +97,8 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_ajout_champ)
         self.stacked_widget.addWidget(self.frame_gerer_employe)
         self.stacked_widget.addWidget(self.frame_horaire)
+        self.stacked_widget.addWidget(self.frame_regle_affaire)
+        self.stacked_widget.addWidget(self.frame_gerer_client)
         
         
         self.history = []
@@ -142,22 +166,24 @@ class Vue(QMainWindow):
         layout.addWidget(sous_titre)
 
         buttons_layout = QHBoxLayout()
-        self.button_formulaire = QPushButton("Formulaire")
-        self.button_formulaire.clicked.connect(lambda: self.controleur.action_splash("formulaire"))
         self.button_stock = QPushButton("Stock")
         self.button_stock.clicked.connect(lambda: self.controleur.action_splash("stock"))
         self.button_produit = QPushButton("Produit")
         self.button_produit.clicked.connect(lambda: self.controleur.action_splash("produit"))
         self.button_fournisseur = QPushButton("Fournisseur")
         self.button_fournisseur.clicked.connect(lambda: self.controleur.action_splash("fournisseur"))
-        self.button_gerant_global = QPushButton("Gérant global")
-        self.button_gerant_global.clicked.connect(lambda: self.controleur.action_splash("gérant global"))
-        
-        buttons_layout.addWidget(self.button_formulaire)
+        self.button_finance = QPushButton("Finance")
+        self.button_finance.clicked.connect(lambda: self.controleur.action_splash("finance"))
+
         buttons_layout.addWidget(self.button_stock)
         buttons_layout.addWidget(self.button_produit)
         buttons_layout.addWidget(self.button_fournisseur)
-        buttons_layout.addWidget(self.button_gerant_global)
+        buttons_layout.addWidget(self.button_finance)  
+        self.button_gerant_global = QPushButton("Gérant global")
+        self.button_gerant_global.clicked.connect(lambda: self.controleur.action_splash("gérant global"))
+        
+       
+        # buttons_layout.addWidget(self.button_gerant_global)
 
         layout.addLayout(buttons_layout)
 
@@ -177,10 +203,6 @@ class Vue(QMainWindow):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_splash)
 
-    def basculer_vers_vente(self):
-        self.history.append(self.stacked_widget.currentWidget())
-        self.stacked_widget.setCurrentWidget(self.frame_vente)
-
     def basculer_vers_stock(self):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_stock)
@@ -189,23 +211,56 @@ class Vue(QMainWindow):
         self.history.append(self.stacked_widget.currentWidget())
         self.frame_succursale.load_succursale()
         self.stacked_widget.setCurrentWidget(self.frame_succursale)
+        
 
     def basculer_vers_produit(self):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_produit)
+
+
         
     def basculer_vers_gerant_global(self):
         Emplacement.succursalesId = -1
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
 
+    def basculer_vers_ajout_succursale(self, ajout):
+        if ajout:
+            self.frame_ajout_succursale.set_to_ajout()
+        else:
+            self.frame_ajout_succursale.set_to_modif()
+        self.stacked_widget.setCurrentWidget(self.frame_ajout_succursale)
+
+
     def basculer_vers_fournisseur(self):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_fournisseur)
+        
+    def basculer_vers_finance(self):
+        self.stacked_widget.setCurrentWidget(self.frame_finance)
+        
+    def basculer_vers_finance_report(self):
+        self.frame_finance_report.set_financial_data()
+        self.stacked_widget.setCurrentWidget(self.frame_finance_report)
+        
+    def basculer_vers_fournisseur_report(self):
+        self.stacked_widget.setCurrentWidget(self.frame_fournisseur_report)
+        
+    def basculer_vers_fournisseur_commandes(self):
+        self.stacked_widget.setCurrentWidget(self.frame_fournisseur_commande)
+
+
+    # Méthodes pour obtenir les informations saisies par l'utilisateur
+    def obtenir_identifiants(self):
+        return self.entry_username.text(), self.entry_password.text()
     
     def basculer_vers_ajouter_employer(self):
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_ajouter_employe)
+        
+    def basculer_vers_regle_affaire(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_regle_affaire)
     
     def basculer_vers_gerant(self, id): # baculer vers la succursale
         self.history.append(self.stacked_widget.currentWidget())
@@ -252,17 +307,9 @@ class Vue(QMainWindow):
         self.frame_gerer_employe.load_employe()
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_gerer_employe)
+        
+    def basculer_vers_gerer_client(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_gerer_client)
 
 
-
-
-
-    # Méthodes pour obtenir les informations saisies par l'utilisateur
-
-    def obtenir_informations_vente(self):
-        return (
-            self.entry_item.text(),
-            self.entry_quantite.text(),
-            self.entry_prix.text(),
-            self.entry_date.text()
-        )

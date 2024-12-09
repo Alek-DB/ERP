@@ -22,13 +22,15 @@ class DatabaseManager:
         self._create_tables()
 
     def _create_tables(self):
-        
+
+
         # Création de la table Employes
         self.cursor.execute("""
         CREATE TABLE IF NOT EXISTS Employes (
             id_employe INTEGER PRIMARY KEY AUTOINCREMENT,
             prenom TEXT NOT NULL,
             nom TEXT NOT NULL,
+            email TEXT NOT NULL,
             poste TEXT,
             salaire REAL,
             date_naissance TEXT,
@@ -36,7 +38,7 @@ class DatabaseManager:
             sexe TEXT CHECK(sexe IN ('M', 'F')),
             statut TEXT,
             allergies_preferences_alimentaires TEXT,
-            mot_de_passe TEXT NOT NULL,
+            mot_de_passe TEXT,
             username TEXT NOT NULL UNIQUE
         )
         """)
@@ -71,6 +73,7 @@ class DatabaseManager:
             gerant INTEGER,
             adresse TEXT,
             telephone TEXT,
+            email TEXT NOT NULL,
             code TEXT,
             date_ouverture TEXT,
             statut TEXT,
@@ -123,7 +126,8 @@ class DatabaseManager:
             prenom TEXT NOT NULL,
             adresse TEXT,
             telephone TEXT,
-            email TEXT,
+            date_naissance TEXT,
+            email TEXT NOT NULL,
             date_inscription TEXT,
             statut TEXT,
             notes TEXT
@@ -338,6 +342,21 @@ class DatabaseManager:
             id_achat INTEGER,
             FOREIGN KEY (id_commande) REFERENCES Commandes(id_commande),
             FOREIGN KEY (id_achat) REFERENCES Achats(id_achat)
+        )
+        """)
+        
+        #création de la table Regle d'affaire
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Regle_affaires (
+            id_regle_affaire INTEGER PRIMARY KEY AUTOINCREMENT,
+            table_name TEXT,
+            champ_name TEXT,
+            operateur TEXT,
+            valeur TEXT,
+            action TEXT,
+            desc TEXT,
+            date_send TEXT,
+            statut TEXT
         )
         """)
         

@@ -7,6 +7,8 @@ import requests
 from ERP_modele import Modele
 from ERP_vue import Vue
 from ERP_data_base import DatabaseManager
+import ERP_regle_affaire as regle
+import ERP_role as role
 
 
 
@@ -28,17 +30,33 @@ class Controleur:
         
     def se_connecter(self):
         username, password = self.vue.frame_connexion.obtenir_identifiants()
-         
+        
         state = self.modele.verifier_identifiants(username, password)
         
         if state == "good":
             #VERIFIER LE ROLE DE L'UTILISATEUR ET LE BASCULER SUR LA PAGE DE SON ROLE
             self.vue.afficher_message("Succès", "Connexion réussie !")
+            
+            #verifier les regles d'affaire
+            regle.verify_regles(self.db_manager)
+            
+            sucursale = self.modele.get_succursales(username) #bascule selon le sucursale
+            print(sucursale)
+
             poste = self.modele.get_poste(username) #basculer selon poste
-            if poste == "Gérant global":pass
-            elif poste == "Employé":pass
-            elif poste == "Gérant":pass
-            self.vue.basculer_vers_splash()  
+            print(poste)
+            
+            value = list(role.roles.values())
+            print(value)
+
+            if poste == value[1]:
+                self.vue.basculer_vers_gerant_global()
+            elif poste == value[4]:
+                self.vue.basculer_vers_splash()  
+            elif poste == value[2]:
+                sucursale = self.modele.get_succursales(username)
+                self.vue.basculer_vers_gerant(sucursale)            
+#           self.vue.basculer_vers_splash()  
             
         elif state == "bad":    # employé existe mais mauvais mot de passe
             self.vue.afficher_message("Erreur", "Mot de passe incorrect.")
@@ -77,18 +95,18 @@ class Controleur:
         self.vue.basculer_vers_splash()
 
     def action_splash(self, action):
-        if action == "formulaire":
-            self.vue.basculer_vers_vente()
-        elif action == "stock":
+        if action == "stock":
             self.vue.basculer_vers_stock()
         elif action == "produit":
             self.vue.basculer_vers_produit()
         elif action == "fournisseur":
             self.vue.basculer_vers_fournisseur()
-        elif action == "succursale":
-            self.vue.basculer_vers_succursale()
-        elif action == "gérant global":
-            self.vue.basculer_vers_gerant_global()
+        elif action == "finance":
+            self.vue.basculer_vers_finance()
+        # elif action == "succursale":
+        #     self.vue.basculer_vers_succursale()
+        # elif action == "gérant global":
+        #     self.vue.basculer_vers_gerant_global()
             
         # Gerant   
         elif action == "gérant":
@@ -112,10 +130,9 @@ if __name__ == "__main__":
     try:
         db_manager = DatabaseManager('erp_database.db')
 
-        #db_manager.execute_update("DROP TABLE Horaires")
-        # Requête SQL pour récupérer tous les employés
-        
-        #SUPPRIMER LES EMPLOYÉS ET RESET LE ID
+
+        # #Requête SQL pour récupérer tous les employés
+
         # query = "SELECT id_employe, nom, prenom, username, poste FROM Employes"
         # results = db_manager.execute_query(query)
 
@@ -129,6 +146,11 @@ if __name__ == "__main__":
 
         # else:
         #     print("Aucun employé trouvé dans la base de données.")
+            
+            
+            
+            
+        
             
         # # Supprimer toutes les lignes de la table
         # db_manager.execute_update("DELETE FROM Horaires")
@@ -145,37 +167,15 @@ if __name__ == "__main__":
         # print(f"Le compteur AUTOINCREMENT de la table Employes a été réinitialisé à 0.")
         
 
-
-
-
-
         # # Étape 1: Désactiver la vérification des clés étrangères
         # db_manager.execute_update("PRAGMA foreign_keys=OFF")
 
         # # Étape 2: Supprimer la table existante si elle existe
         # db_manager.execute_update("DROP TABLE IF EXISTS Employes")
-
-        # # Étape 3: Créer la nouvelle table Employes
-        # db_manager.execute_update('''
-        #     CREATE TABLE IF NOT EXISTS Employes (
-        #         id_employe INTEGER PRIMARY KEY AUTOINCREMENT,
-        #         prenom TEXT NOT NULL,
-        #         nom TEXT NOT NULL,
-        #         poste TEXT,
-        #         salaire REAL,
-        #         date_naissance TEXT,
-        #         date_embauche TEXT,
-        #         sexe TEXT CHECK(sexe IN ('M', 'F')),
-        #         statut TEXT,
-        #         allergies_preferences_alimentaires TEXT,
-        #         mot_de_passe TEXT,
-        #         username TEXT NOT NULL UNIQUE
-        #     )
-        # ''')
-
-        # # Étape 4: Réactiver la vérification des clés étrangères
-        # db_manager.execute_update("PRAGMA foreign_keys=ON")
-
+        # db_manager.execute_update("DROP TABLE IF EXISTS Succursales")
+        # db_manager.execute_update("DROP TABLE IF EXISTS Clients")
+        # db_manager.execute_update("DROP TABLE IF EXISTS Fournisseurs")
+        # db_manager.execute_update("DROP TABLE IF EXISTS Regle_affaires")
     except sqlite3.Error as e:
         QMessageBox.critical(None, "Erreur", f"Une erreur est survenue lors de l'initialisation de la base de données : {e}")
 

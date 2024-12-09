@@ -26,10 +26,6 @@ class Modele:
         # Si un employé a été trouvé
         if resultat:
             mot_de_passe_hache = resultat[0][0]
-            print(mot_de_passe_hache)
-            print(mot_de_passe_hache == None)
-            print(mot_de_passe_hache is None)
-            print(mot_de_passe_hache == "None")
             # Comparer le mot de passe fourni avec le mot de passe haché
             if mot_de_passe_hache == self.hacher_mot_de_passe(mot_de_passe):
                 return "good"
@@ -44,24 +40,24 @@ class Modele:
     def hacher_mot_de_passe(self, mot_de_passe):
             return hashlib.sha256(mot_de_passe.encode()).hexdigest()
         
-    def créer_premier_employé(self,username, password):
+    def créer_premier_employé(self, username, password):
         password = self.hacher_mot_de_passe(password)
         try:
             self.db_manager.execute_update("""
-                INSERT INTO Employes (prenom, nom, username, mot_de_passe, poste)
-                VALUES (?, ?, ?, ?, ?)
-            """, ("temp", "temp", username, password, "Gérant Global"))
+                INSERT INTO Employes (prenom, nom, username, mot_de_passe, poste, email)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, ("temp", "temp", username, password, "Gérant Global", "temp@gmail.com"))
             
             self.db_manager.execute_update("""
-                INSERT INTO Succursales (nom)
-                VALUES (?)
-            """, ("temp",))
+                INSERT INTO Succursales (nom, email)
+                VALUES (?, ?)
+            """, ("temp", "temp@gmail.com"))
             
 
             db_manager = DatabaseManager('erp_database.db')
             
             values = (
-                1, 1,
+                1, 1, 
                 "09:00", "11:00",
                 "09:00", "11:00",
                 "09:00", "11:00",
@@ -79,7 +75,6 @@ class Modele:
                         VALUES (?, ?, date('now'),
                                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'actif')
                     """
-            
             
             db_manager.execute_update(query, values)
             
@@ -99,9 +94,42 @@ class Modele:
         
         
     def get_poste(self, username):
-        resultat = self.db_manager.execute_query("SELECT poste FROM Employes WHERE prenom = ?", (username,))
+        resultat = self.db_manager.execute_query("SELECT poste FROM Employes WHERE username = ?", (username,))
         if resultat:
             return resultat[0][0]
+        
+    
+    def get_succursales(self, username):
+        # Étape 1: Récupérer l'ID de l'employé à partir du username
+        query = """
+        SELECT id_employe FROM Employes WHERE username = ?
+        """
+        result = self.db_manager.execute_query(query, (username,))
+        
+        if not result:
+            return None  # L'employé avec ce username n'existe pas
+        
+        # Récupérer l'ID de l'employé
+        id_employe = result[0][0]
+        
+        # Étape 2: Récupérer les succursales associées à cet employé via la table Employes_Succursales
+        query = """
+        SELECT Succursales.id_succursale
+        FROM Employes_Succursales
+        JOIN Succursales ON Employes_Succursales.id_succursale = Succursales.id_succursale
+        WHERE Employes_Succursales.id_employe = ?
+        """
+        
+        # Exécuter la requête pour récupérer les succursales de l'employé
+        succursales = self.db_manager.execute_query(query, (id_employe,))
+        
+        if not succursales:
+            return None  # Aucun résultat trouvé, l'employé n'est pas affecté à une succursale
+        
+        succursale = succursales[0][0]
+        print(succursale)
+
+        return succursale
         
     
     def creer_vente(self, item, quantite, prix_unitaire, date):
