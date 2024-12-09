@@ -9,6 +9,7 @@ from PySide6.QtCore import Qt
 
 from ERP_data_base import DatabaseManager
 from ERP_emplacement import Emplacement
+import ERP_role as role
 import re
 
 class AddModifyDialog(QDialog):
@@ -41,7 +42,7 @@ class AddModifyDialog(QDialog):
             labels.append("Succursale")
         for i, label in enumerate(labels):
             lbl = QLabel(label)
-            if label == "sex":
+            if label == "sexe":
                 # Créer un QComboBox pour le champ Sexe
                 input_field = QComboBox()
                 input_field.addItems(["M", "F"])  # Options du dropdown
@@ -51,6 +52,10 @@ class AddModifyDialog(QDialog):
                 for succursale in succursales:
                     succursale_nom = f"{succursale[0]},  {succursale[1]}"
                     input_field.addItem(succursale_nom)
+            elif label == "poste":
+                 input_field = QComboBox()
+                 for value in role.roles.values():
+                     input_field.addItem(value)
             else:
                 input_field = QLineEdit()  # Champ texte pour les autres labels
             layout.addWidget(lbl, i, 0)
@@ -90,7 +95,9 @@ class AddModifyDialog(QDialog):
         if self.employee_data:
             for label, value in zip(self.inputs.keys(), self.employee_data):
                 if isinstance(self.inputs[label], QComboBox):
-                    self.inputs[label].setCurrentText(str(value))
+                    print(label, value)
+                    id = self.inputs[label].findText(str(value))
+                    self.inputs[label].setCurrentIndex(id)
                 else:
                     self.inputs[label].setText(str(value))
             self.inputs['username'].setEnabled(False)  # Désactiver le champ ou ne pas l'afficher
