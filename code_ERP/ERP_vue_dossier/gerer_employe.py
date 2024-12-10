@@ -95,7 +95,6 @@ class AddModifyDialog(QDialog):
         if self.employee_data:
             for label, value in zip(self.inputs.keys(), self.employee_data):
                 if isinstance(self.inputs[label], QComboBox):
-                    print(label, value)
                     id = self.inputs[label].findText(str(value))
                     self.inputs[label].setCurrentIndex(id)
                 else:
@@ -151,16 +150,10 @@ class AddModifyDialog(QDialog):
             else:
                 self.succursale = re.match(r"(\d+)", self.succursale).group(1)
                 
-            print(self.succursale)
             query = f"""
             INSERT INTO Employes_Succursales (id_employe, id_succursale, date_debut)
             VALUES ({self.id},{self.succursale}, date('now'))
             """
-            
-            print("Lien ----------------------------")
-            print(query)
-            print(self.db_manager.cursor.lastrowid)
-            print(self.succursale)
             self.db_manager.execute_update(query, ())
         except sqlite3.Error as e:
             print(f"Une erreur est survenue lors du lien : {e}")
@@ -188,9 +181,6 @@ class AddModifyDialog(QDialog):
                         VALUES (?, ?, date('now'),
                                 ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'actif')
                     """
-            print("Horaire ----------------------------")
-            print(query)
-            print(values)
             self.db_manager.execute_update(query, values)
             print("horaire rajouter")
         except sqlite3.Error as e:
@@ -267,7 +257,6 @@ class QGereEmploye(QWidget):
         back_button.clicked.connect(self.vue.basculer_before)
 
     def load_employe(self):
-        print(Emplacement.succursalesId)
         try:
             db_manager = DatabaseManager('erp_database.db')
             if Emplacement.succursalesId != -1:
@@ -330,7 +319,6 @@ class QGereEmploye(QWidget):
             db_manager = DatabaseManager('erp_database.db')
             
             result =  db_manager.execute_query("SELECT nom FROM Succursales WHERE gerant = ?", (id_employe,))
-            print(result)
             if result: 
                 QMessageBox.critical(None, "Erreur", f"L'employé est un gérant de la succursale {result[0][0]}")
                 return
@@ -379,8 +367,6 @@ class QGereEmploye(QWidget):
             query = f"UPDATE Employes SET {set_clause} WHERE username = ?"
 
             values = new_values + [old_username_employe]
-            print(query)
-            print(new_values)
 
             self.db_manager.execute_update(query, values)
 

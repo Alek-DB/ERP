@@ -33,6 +33,9 @@ class QGerantGlobal(QWidget):
         button7 = QPushButton("Commandes")
         button7.clicked.connect(parent.basculer_vers_fournisseur)
         
+        button6 = QPushButton("Produits")
+        button6.clicked.connect(parent.basculer_vers_produit)
+        
         # Mise en page horizontale pour les boutons centrés
         button_layout = QHBoxLayout()
         button_layout.addWidget(button1)
@@ -42,6 +45,7 @@ class QGerantGlobal(QWidget):
         button_layout.addWidget(button5)
         button_layout.addWidget(button6)
         button_layout.addWidget(button7)
+
         # Ajouter du padding entre les boutons
         button_layout.setSpacing(30)  # Espacement entre les boutons
         button_layout.setContentsMargins(50, 50, 50, 50)  # Marges de la mise en page

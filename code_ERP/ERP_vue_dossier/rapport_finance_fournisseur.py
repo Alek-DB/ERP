@@ -65,9 +65,9 @@ class QFinanceFournisseurReport(QWidget):
             return
 
         # Parcourir et afficher chaque ligne
-        print("Contenu de la table Commandes :")
-        for row in results:
-            print(dict(row))  # Convertit la ligne en dictionnaire pour un affichage lisible
+        # print("Contenu de la table Commandes :")
+        # for row in results:
+        #     print(dict(row))  # Convertit la ligne en dictionnaire pour un affichage lisible
 
         
 

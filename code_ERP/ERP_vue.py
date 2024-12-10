@@ -29,6 +29,7 @@ from ERP_vue_dossier.finance import QFinance
 from ERP_vue_dossier.rapport_finance import QFinanceReport
 from ERP_vue_dossier.rapport_finance_fournisseur import QFinanceFournisseurReport
 from ERP_vue_dossier.commande_fournisseur import QCommandeFournisseur
+from ERP_vue_dossier.afficher_regle import QAfficheRegle
 
 
 
@@ -66,6 +67,7 @@ class Vue(QMainWindow):
         self.frame_gerer_employe = QGereEmploye(self)
         self.frame_horaire = QHoraire(self)
         self.frame_regle_affaire = QRegleAffaire(self)
+        self.frame_affiche_regle = QAfficheRegle(self)
         self.frame_gerer_client = QClient(self, self.controleur.db_manager)
 
         # Ajout des frames au QStackedWidget
@@ -97,6 +99,7 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_horaire)
         self.stacked_widget.addWidget(self.frame_regle_affaire)
         self.stacked_widget.addWidget(self.frame_gerer_client)
+        self.stacked_widget.addWidget(self.frame_affiche_regle)
         
         
         self.history = []
@@ -265,3 +268,7 @@ class Vue(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.frame_gerer_client)
 
 
+    def basculer_vers_afficher_regles_affaire(self):        
+        self.history.append(self.stacked_widget.currentWidget())
+        self.frame_affiche_regle.load_data()
+        self.stacked_widget.setCurrentWidget(self.frame_affiche_regle)
