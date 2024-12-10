@@ -36,6 +36,7 @@ class Controleur:
         if state == "good":
             #VERIFIER LE ROLE DE L'UTILISATEUR ET LE BASCULER SUR LA PAGE DE SON ROLE
             self.vue.afficher_message("Succès", "Connexion réussie !")
+
             
             #verifier les regles d'affaire
             regle.verify_regles(self.db_manager)
@@ -45,6 +46,7 @@ class Controleur:
             
         elif state == "bad":    # employé existe mais mauvais mot de passe
             self.vue.afficher_message("Erreur", "Mot de passe incorrect.")
+
         else:
             if self.vue.frame_connexion.first_login or state == "first": # Employé n'existe pas et premier
                 self.first_login(username, password)

@@ -358,17 +358,22 @@ class QFournisseur(QWidget):
 
         def load_data(self):
             try:
-                query = "SELECT * FROM Fournisseurs"
+                query = """
+                SELECT c.id_commande, f.nom AS fournisseur, p.nom_produit, cp.quantite, cp.prix_unitaire
+                FROM Commandes c
+                JOIN Fournisseurs f ON c.id_fournisseur = f.id_fournisseur
+                JOIN Commandes_Produits cp ON c.id_commande = cp.id_commande
+                JOIN Produits p ON cp.id_produit = p.id_produit
+                """
                 results = self.db_manager.execute_query(query)
-                self.supplier_table.setRowCount(0)  # Clear existing data
+                self.orders_table.setRowCount(0)  # Clear existing data
 
                 for row_number, row_data in enumerate(results):
-                    self.supplier_table.insertRow(row_number)
-                    self.supplier_table.setItem(row_number, 0, QTableWidgetItem(str(row_data['id_fournisseur'])))
-                    self.supplier_table.setItem(row_number, 1, QTableWidgetItem(row_data['nom']))
-                    self.supplier_table.setItem(row_number, 2, QTableWidgetItem(row_data['adresse'] or ''))
-                    self.supplier_table.setItem(row_number, 3, QTableWidgetItem(row_data['telephone'] or ''))
-                    self.supplier_table.setItem(row_number, 4, QTableWidgetItem(row_data['email'] or ''))
+                    self.orders_table.insertRow(row_number)
+                    self.orders_table.setItem(row_number, 0, QTableWidgetItem(str(row_data['id_commande'])))
+                    self.orders_table.setItem(row_number, 1, QTableWidgetItem(row_data['fournisseur']))
+                    self.orders_table.setItem(row_number, 2, QTableWidgetItem(row_data['nom_produit']))
+                    self.orders_table.setItem(row_number, 3, QTableWidgetItem(str(row_data['quantite'])))
+                    self.orders_table.setItem(row_number, 4, QTableWidgetItem(str(row_data['prix_unitaire'])))
             except Exception as e:
-                QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors du chargement des données : {e}")
-
+                QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors du chargement des commandes : {e}")
