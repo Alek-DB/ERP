@@ -31,11 +31,7 @@ class QAfficheRegle(QWidget):
         self.load_data()  # Charge les données au départ
         
     def load_data(self):
-        # Vider le layout avant de recharger les données
-        for i in reversed(range(self.regle_layout.count())):
-            widget = self.regle_layout.itemAt(i).widget()
-            if widget is not None:
-                widget.deleteLater()  # Supprimer les widgets précédemment ajoutés
+        self.clear_layout(self.regle_layout)
 
         # Recharger les données depuis la base de données
         rows = self.db_manager.execute_query("SELECT * FROM Regle_affaires", ())
@@ -53,7 +49,7 @@ class QAfficheRegle(QWidget):
             date_fin = regle[10]
 
             line = QHBoxLayout()
-            line.addWidget(QLabel(f"{id} - {action} - {table} - {champ} - {valeur} - {operateur} - {message} - {date} - {date_debut} - {date_fin} - {statut}"))
+            line.addWidget(QLabel(f"{id} - {action} - {table} - {champ} - {operateur} - {valeur} - {message} - {date} - {date_debut} - {date_fin} - {statut}"))
             
             # Créer le bouton de suppression
             btn = QPushButton("delete")
@@ -68,3 +64,13 @@ class QAfficheRegle(QWidget):
         
         # Recharger les données après la suppression
         self.load_data()
+
+
+    def clear_layout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)  # Retire l'élément du layout
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()  # Supprime les widgets
+            elif item.layout() is not None:
+                self.clear_layout(item.layout())  # Récursion pour nettoyer les sous-layouts

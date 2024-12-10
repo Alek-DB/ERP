@@ -67,7 +67,7 @@ class QFournisseur(QWidget):
         modify_button.clicked.connect(self.modify_supplier)
         create_order_button.clicked.connect(self.create_order)
         show_orders_button.clicked.connect(self.show_orders)
-        back_button.clicked.connect(parent.basculer_vers_splash)
+        back_button.clicked.connect(parent.basculer_before)
 
     def load_data(self):
         try:

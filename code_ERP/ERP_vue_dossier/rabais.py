@@ -5,12 +5,4 @@ class Rabais():
         self.value = float(value)
         self.title = f"Vous avez un rabais de {self.rabais}% pour un total de commande {self.operateur} {self.value}$"
         
-        
-operateurs = {
-    "<": "lt",
-    "<=": "le",
-    ">": "gt",
-    ">=": "ge",
-    "=": "eq",
-    "!=": "ne"
-}
+    

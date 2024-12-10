@@ -1,6 +1,6 @@
 import sqlite3
 from PySide6.QtCore import Qt, QTime
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QTimeEdit, QPushButton, QComboBox, QGridLayout
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QTimeEdit, QPushButton, QComboBox, QGridLayout, QMessageBox
 from PySide6.QtGui import QIntValidator
 
 
@@ -140,7 +140,6 @@ class QHoraire(QWidget):
             # Exécuter la mise à jour dans la base de données
             db_manager.execute_update(query, values)
 
-            print("Les horaires ont été mis à jour avec succès.")
-
+            QMessageBox.information(self, "Succès", "Horaires mis a jour avec succès")
         except sqlite3.Error as e:
             print(f"Une erreur est survenue lors de l'enregistrement des horaires : {e}")
