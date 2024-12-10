@@ -114,6 +114,7 @@ class AddModifyDialog(QDialog):
             qte_actuelle = int(qte_actuelle)
             restock = int(restock)
         except ValueError:
+            QMessageBox.critical(None, "Erreur", f"Quantité, Restock et Prix doivent être des nombres valides")
             print("Erreur : Quantité, Restock et Prix doivent être des nombres valides.")
             return
 
@@ -142,6 +143,7 @@ class AddModifyDialog(QDialog):
             qte_actuelle = int(qte_actuelle)
             restock = int(restock)
         except ValueError:
+            QMessageBox.critical(None, "Erreur", f"Quantité, Restock et Prix doivent être des nombres valides")
             print("Erreur : Quantité, Restock et Prix doivent être des nombres valides.")
             return
 

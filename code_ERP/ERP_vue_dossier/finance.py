@@ -14,7 +14,8 @@ class QFinance(QWidget):
 
         # Bouton de retour
         back_button = QPushButton("<-")
-        back_button.clicked.connect(self.go_back.emit)  # Émet le signal pour revenir en arrière
+        back_button.clicked.connect(parent.basculer_before)
+        # Émet le signal pour revenir en arrière
         layout.addWidget(back_button, 0, 0)
 
         # Boutons principaux

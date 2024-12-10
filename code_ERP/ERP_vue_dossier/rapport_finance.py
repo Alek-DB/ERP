@@ -1,5 +1,7 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QPushButton, QLabel, QLineEdit
 from PySide6.QtCore import Qt, Signal
+from ERP_emplacement import Emplacement
+
 
 
 class QFinanceReport(QWidget):
@@ -10,6 +12,8 @@ class QFinanceReport(QWidget):
         
         self.vue = parent
         
+
+        
         # Layout principal
         layout = QGridLayout()
         
@@ -17,7 +21,7 @@ class QFinanceReport(QWidget):
 
         # Bouton de retour
         back_button = QPushButton("<-")
-        back_button.clicked.connect(self.go_back.emit)
+        back_button.clicked.connect(parent.basculer_before)
         layout.addWidget(back_button, 0, 0)
 
         # Bouton Durée (on peut ajouter un signal ici pour appliquer des filtres si nécessaire)
@@ -61,6 +65,10 @@ class QFinanceReport(QWidget):
 
     def set_financial_data(self):
         
+        self.succursale = Emplacement.succursalesId
+        print("yo")
+        print(self.succursale)
+        
         expenses = self.get_total_expenses()
         profits = self.get_total_profits()
         salaries = self.get_total_salaries()
@@ -92,8 +100,10 @@ class QFinanceReport(QWidget):
 
     def get_total_salaries(self):
         query = """
-        SELECT SUM(salaire) AS total_salaries
-        FROM Employes
+        SELECT SUM(e.salaire) AS total_salaries
+                FROM Employes e
+                INNER JOIN Employes_Succursales es ON e.id_employe = es.id_employe
+                WHERE es.id_succursale = ?
         """
-        result = self.db_manager.execute_query(query)
+        result = self.db_manager.execute_query(query,(self.succursale,))
         return result[0]["total_salaries"] if result[0]["total_salaries"] is not None else 0
