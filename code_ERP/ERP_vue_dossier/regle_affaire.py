@@ -4,6 +4,7 @@ from PySide6.QtGui import QIntValidator, QDoubleValidator
 from ERP_data_base import DatabaseManager
 import re
 import sqlite3
+from ERP_vue_dossier.rabais import *
 
 class QRegleAffaire(QWidget):
     def __init__(self, parent=None):
@@ -22,15 +23,11 @@ class QRegleAffaire(QWidget):
 
         # Titre de la page
         layout.addWidget(QLabel("Gestion des Règles d'Affaires"), alignment=Qt.AlignCenter)
+        btn = QPushButton("Afficher règles")
+        btn.clicked.connect(parent.basculer_vers_afficher_regles_affaire)
+        layout.addWidget(btn, alignment=Qt.AlignCenter)
         
-        self.operateurs = {
-            "<": "lt",
-            "<=": "le",
-            ">": "gt",
-            ">=": "ge",
-            "=": "eq",
-            "!=": "ne"
-        }
+        self.operateurs = operateurs
         
         # Création du formulaire pour la règle d'affaire
         form_layout = QVBoxLayout()
@@ -39,6 +36,7 @@ class QRegleAffaire(QWidget):
         self.combo_actions = QComboBox(self)
         self.combo_actions.addItem("Sélectionnez une action")
         self.combo_actions.addItem("Envoyer email")
+        self.combo_actions.addItem("Appliquer rabais")
         #self.combo_actions.addItem("Appliquer rabais")
         form_layout.addWidget(QLabel("Action:"))
         form_layout.addWidget(self.combo_actions)
@@ -46,8 +44,8 @@ class QRegleAffaire(QWidget):
         # Sélection du champ de la table
         self.combo_champs = QComboBox(self)
         self.combo_champs.addItem("Sélectionnez un champ")
-        self.email_table = ["Clients","Employes","Succursales","Fournisseurs"]
-        self.rabais_table = ["Clients","Succursales","Produits","Achats","Commandes"]
+        # self.email_table = ["Clients","Employes","Succursales","Fournisseurs"]
+        # self.rabais_table = ["Clients","Succursales","Produits","Achats","Commandes"]
         
         self.champ_label = QLabel("Champ de Table:")
         form_layout.addWidget(self.champ_label)
@@ -88,6 +86,25 @@ class QRegleAffaire(QWidget):
         self.date_label = QLabel("Date:")
         form_layout.addWidget(self.date_label)
         form_layout.addWidget(self.date_edit)
+        
+        
+        
+        
+        
+        #RABAIS |||
+        self.date_debut_rabais = QLineEdit(self)
+        self.date_debut_rabais.setPlaceholderText("Entrez la date du début du rabais : YYYY-MM-DD")
+        self.valeur_debut_label = QLabel("Date début:")
+        form_layout.addWidget(self.valeur_debut_label)
+        form_layout.addWidget(self.date_debut_rabais)
+        
+        self.date_fin_rabais = QLineEdit(self)
+        self.date_fin_rabais.setPlaceholderText("Entrez la date de la fin du rabais : YYYY-MM-DD")
+        self.valeur_fin_label = QLabel("Date fin:")
+        form_layout.addWidget(self.valeur_fin_label)
+        form_layout.addWidget(self.date_fin_rabais)
+        
+        
 
         # Ajouter le formulaire au layout principal
         layout.addLayout(form_layout)
@@ -104,24 +121,33 @@ class QRegleAffaire(QWidget):
         self.mettre_a_jour_interface()
 
 
-    def _charger_champs_table(self, show):
-        """Charger dynamiquement les champs disponibles dans les tables depuis la base de données."""
-        query = """
-            SELECT name FROM sqlite_master WHERE type='table';
-        """
-        tables = self.db_manager.execute_query(query)  # Récupérer les noms des tables
-
+    def _charger_champs_table(self, rabais):
         self.combo_champs.clear()
-        # Pour chaque table, récupérer les champs
-        for table in tables:
-            table_name = table[0]
-            if table_name not in show: continue
-            query = f"PRAGMA table_info({table_name})"
-            columns = self.db_manager.execute_query(query)  # Récupérer les colonnes de la table
-            for column in columns:
-                field_name = column[1]  # Nom du champ
-                if "id_" in field_name: continue
-                self.combo_champs.addItem(f"[{table_name}] - {field_name}")
+        if rabais:
+            self.combo_champs.addItem(f"[Commandes] - total")
+        else:
+            self.combo_champs.addItem(f"[Employes] - id_employe")
+            self.combo_champs.addItem(f"[Succursales] - id_succursale")
+            self.combo_champs.addItem(f"[Clients] - id_client")
+            self.combo_champs.addItem(f"[Fournisseurs] - id_fournisseur")
+            
+        # """Charger dynamiquement les champs disponibles dans les tables depuis la base de données."""
+        # query = """
+        #     SELECT name FROM sqlite_master WHERE type='table';
+        # """
+        # tables = self.db_manager.execute_query(query)  # Récupérer les noms des tables
+
+        # self.combo_champs.clear()
+        # # Pour chaque table, récupérer les champs
+        # for table in tables:
+        #     table_name = table[0]
+        #     if table_name not in show: continue
+        #     query = f"PRAGMA table_info({table_name})"
+        #     columns = self.db_manager.execute_query(query)  # Récupérer les colonnes de la table
+        #     for column in columns:
+        #         field_name = column[1]  # Nom du champ
+        #         if "id_" in field_name: continue
+        #         self.combo_champs.addItem(f"[{table_name}] - {field_name}")
 
     def mettre_a_jour_interface(self):
         """Mettre à jour l'interface en fonction de l'action choisie dans le QComboBox."""
@@ -130,7 +156,7 @@ class QRegleAffaire(QWidget):
         # Masquer ou afficher les champs en fonction de l'action
         if action == "Envoyer email":
             # Afficher les champs spécifiques à l'envoi d'email
-            self._charger_champs_table(self.email_table )  # Charger les champs depuis la base de données
+            self._charger_champs_table(False )  # Charger les champs depuis la base de données
             self.champ_label.setVisible(True)
             self.operateur_label.setVisible(True)
             self.combo_champs.setVisible(True)
@@ -152,9 +178,16 @@ class QRegleAffaire(QWidget):
             self.date_label.setVisible(True)
             self.date_edit.setVisible(True)
             
+            
+            #date
+            self.date_debut_rabais.setVisible(False)
+            self.valeur_debut_label.setVisible(False)
+            self.date_fin_rabais.setVisible(False)
+            self.valeur_fin_label.setVisible(False)
+            
         elif action == "Appliquer rabais":
             # Afficher les champs spécifiques à l'application de rabais
-            self._charger_champs_table(self.rabais_table )  # Charger les champs depuis la base de données
+            self._charger_champs_table(True )  # Charger les champs depuis la base de données
             self.champ_label.setVisible(True)
             self.operateur_label.setVisible(True)
             self.combo_champs.setVisible(True)
@@ -164,7 +197,7 @@ class QRegleAffaire(QWidget):
             #valeur
             self.valeur_label.setVisible(True)
             self.valeur_action_label.setVisible(True)
-            self.line_action_value.setPlaceholderText("Entrez le pourcentage du rabais à appliquer")
+            self.line_action_value.setPlaceholderText("Entrez le pourcentage du rabais à appliquer ex: 50 pour 50%")
             self.line_donnee.setVisible(True)
             self.line_donnee.setPlaceholderText("Entrez la valeur")
             self.line_action_value.setVisible(True)
@@ -174,6 +207,12 @@ class QRegleAffaire(QWidget):
             self.format.setVisible(False)
             self.date_label.setVisible(False)
             self.date_edit.setVisible(False)
+            
+            #date
+            self.date_debut_rabais.setVisible(True)
+            self.valeur_debut_label.setVisible(True)
+            self.date_fin_rabais.setVisible(True)
+            self.valeur_fin_label.setVisible(True)
         else:
             # Par défaut, on désactive tous les champs sauf la sélection de l'action
             self.champ_label.setVisible(False)
@@ -192,6 +231,12 @@ class QRegleAffaire(QWidget):
             self.format.setVisible(False)
             self.date_label.setVisible(False)
             self.date_edit.setVisible(False)
+            
+            #date
+            self.date_debut_rabais.setVisible(False)
+            self.valeur_debut_label.setVisible(False)
+            self.date_fin_rabais.setVisible(False)
+            self.valeur_fin_label.setVisible(False)
 
     def enregistrer_regle(self):
         """Enregistrer la règle d'affaire dans la base de données."""
@@ -201,6 +246,8 @@ class QRegleAffaire(QWidget):
         action = self.combo_actions.currentText()
         desc = self.line_action_value.text()
         date = self.date_edit.text()
+        date_debut = self.date_debut_rabais.text()
+        date_fin = self.date_fin_rabais.text()
         
         pattern = r"\[(.*?)\] - (.*)"
         match = re.match(pattern, champ_selectionne)
@@ -213,38 +260,46 @@ class QRegleAffaire(QWidget):
             return
         
         try:
+            if action == "Envoyer email":
             # si j'envoi un email a tout mes employés ou clients, faire plusieurs regles d'affaire
-            if valeur == "" and action == "Envoyer email": # toute les valeurs de la table
-                all_element = self.db_manager.execute_query(f"SELECT * FROM {table}", ())
-                for element in all_element:
-                    status = "pending"
-                    date_msg = date
-                    if table == "Employes":
-                        if date == "naissance":
-                            date_msg = element[6]
-                            status = "infinite"
-                            
-                        query = f"""
-                        INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc, date_send, statut)
-                        VALUES ("{table}", "id_employe", "{self.operateurs.get(operateur)}", "{element[0]}", "{action}", "{desc}", "{date_msg}", "{status}")
-                        """
-                    elif table == "Clients":
-                        if date == "naissance":
-                            date_msg = element[5]
-                            status = "infinite"
-                        query = f"""
-                        INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc, date_send, statut)
-                        VALUES ("{table}", "id_client", "{self.operateurs.get(operateur)}", "{element[0]}", "{action}", "{desc}", "{date_msg}", "{status}")
-                        """
-                    self.db_manager.execute_update(query, ())
-                    print(f"regle créer pour {table}, {date_msg}")
-            else:
-                # sinon crée juste une regle
-                query = f"""
-                INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc, date_send, statut)
-                VALUES ("{table}", "{champ}", "{self.operateurs.get(operateur)}", "{valeur}", "{action}", "{desc}", "{date}", "pending")
-                """
-                self.db_manager.execute_update(query, ())
+                if valeur == "": # toute les valeurs de la table
+                    all_element = self.db_manager.execute_query(f"SELECT * FROM {table}", ())
+                    for element in all_element:
+                        status = "pending"
+                        date_msg = date
+                        if table == "Employes":
+                            if date == "naissance":
+                                date_msg = element[6]
+                                status = "infinite"
+                                
+                            query = f"""
+                            INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc, date_send, statut)
+                            VALUES ("{table}", "id_employe", "{self.operateurs.get(operateur)}", "{element[0]}", "{action}", "{desc}", "{date_msg}", "{status}")
+                            """
+                        elif table == "Clients":
+                            if date == "naissance":
+                                date_msg = element[5]
+                                status = "infinite"
+                            query = f"""
+                            INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc, date_send, statut)
+                            VALUES ("{table}", "id_client", "{self.operateurs.get(operateur)}", "{element[0]}", "{action}", "{desc}", "{date_msg}", "{status}")
+                            """
+                        self.db_manager.execute_update(query, ())
+                        print(f"regle créer pour {table}, {date_msg}")
+                else:
+                    # sinon crée juste une regle
+                    query = f"""
+                    INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc, date_send, statut)
+                    VALUES ("{table}", "{champ}", "{self.operateurs.get(operateur)}", "{valeur}", "{action}", "{desc}", "{date}", "pending")
+                    """
+            elif action == "Appliquer rabais":
+                query =f"""
+                    INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc,  date_debut, date_fin, statut)
+                    VALUES ("{table}", "{champ}", "{self.operateurs.get(operateur)}", "{valeur}", "{action}", "{desc}", "{date_debut}", "{date_fin}" ,"pending")
+                    """
+                
+            QMessageBox.warning(None, "", f"Votre règle à été enregistré")
+            self.db_manager.execute_update(query, ())
         except sqlite3.Error as e:
             print(f"Une erreur est survenue lors de l'enregistrement de la règle d'affaire : {e}")
 

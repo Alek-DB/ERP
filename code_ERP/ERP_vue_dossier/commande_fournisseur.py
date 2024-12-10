@@ -156,7 +156,7 @@ class QCommandeFournisseur(QWidget):
 
             # Si aucun résultat, afficher un message
             if not results:
-                print("Aucun paiement trouvé pour les fournisseurs.")
+                # print("Aucun paiement trouvé pour les fournisseurs.")
                 return
 
             # Remplissage du tableau

@@ -17,6 +17,9 @@ from ERP_vue_dossier.gerer_employe import QGereEmploye
 from ERP_vue_dossier.horaire import QHoraire
 from ERP_vue_dossier.regle_affaire import QRegleAffaire
 from ERP_emplacement import Emplacement
+from ERP_vue_dossier.hr import qHRWindow
+from ERP_vue_dossier.commandes_hr import CommandesHRWindow
+from ERP_vue_dossier.employe_hr import EmployeHRWindow
 from ERP_vue_dossier.client import QClient
 
 # La classe Modele reste inchangée
@@ -27,6 +30,7 @@ from ERP_vue_dossier.finance import QFinance
 from ERP_vue_dossier.rapport_finance import QFinanceReport
 from ERP_vue_dossier.rapport_finance_fournisseur import QFinanceFournisseurReport
 from ERP_vue_dossier.commande_fournisseur import QCommandeFournisseur
+from ERP_vue_dossier.afficher_regle import QAfficheRegle
 
 
 
@@ -57,9 +61,15 @@ class Vue(QMainWindow):
         self.frame_employe = QEmploye(self)
         self.frame_ajouter_employe = QAddEmploye(self)
         self.frame_ajout_champ = QAjoutChamp(self)
+
+        # Frame HR
+        self.frame_hr = qHRWindow(self)
+        self.frame_hr_commandes = CommandesHRWindow(self)
+        self.frame_hr_employe = EmployeHRWindow(self)
         self.frame_gerer_employe = QGereEmploye(self)
         self.frame_horaire = QHoraire(self)
         self.frame_regle_affaire = QRegleAffaire(self)
+        self.frame_affiche_regle = QAfficheRegle(self)
         self.frame_gerer_client = QClient(self, self.controleur.db_manager)
 
         # Ajout des frames au QStackedWidget
@@ -79,15 +89,25 @@ class Vue(QMainWindow):
 
 
         self.stacked_widget.addWidget(self.frame_gerant)
+
         self.stacked_widget.addWidget(self.frame_employe)
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
+
+        # Frame HR
+        self.stacked_widget.addWidget(self.frame_hr)
+        self.stacked_widget.addWidget(self.frame_hr_commandes)
+        self.stacked_widget.addWidget(self.frame_hr_employe)
+        
+
+
         self.stacked_widget.addWidget(self.frame_ajouter_employe)
         self.stacked_widget.addWidget(self.frame_ajout_champ)
         self.stacked_widget.addWidget(self.frame_gerer_employe)
         self.stacked_widget.addWidget(self.frame_horaire)
         self.stacked_widget.addWidget(self.frame_regle_affaire)
         self.stacked_widget.addWidget(self.frame_gerer_client)
+        self.stacked_widget.addWidget(self.frame_affiche_regle)
         
         
         self.history = []
@@ -218,6 +238,21 @@ class Vue(QMainWindow):
         Emplacement.succursalesId = id
         self.stacked_widget.setCurrentWidget(self.frame_gerant)
         
+    # vers hr    
+    def basculer_vers_hr(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_hr) 
+    # Vers HR commandes
+    def basculer_vers_commandes_hr(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_hr_commandes)
+    
+    # Vers HR Employées
+    def basculer_vers_employes_hr(self):
+        self.history.append(self.stacked_widget.currentWidget())
+        self.stacked_widget.setCurrentWidget(self.frame_hr_employe)   
+    
+        
     def basculer_vers_horaire(self, id): # baculer vers la succursale
         self.history.append(self.stacked_widget.currentWidget())
         Emplacement.employeHoraire = id
@@ -250,3 +285,7 @@ class Vue(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.frame_gerer_client)
 
 
+    def basculer_vers_afficher_regles_affaire(self):        
+        self.history.append(self.stacked_widget.currentWidget())
+        self.frame_affiche_regle.load_data()
+        self.stacked_widget.setCurrentWidget(self.frame_affiche_regle)

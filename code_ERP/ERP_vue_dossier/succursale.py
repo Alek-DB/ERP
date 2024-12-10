@@ -37,9 +37,6 @@ class AddModifyDialog(QDialog):
         
         # Create the layout
         layout = QGridLayout()
-        
-        
-        
 
         # Prendre le nom des colonnes dynamiquement
         labels = []
@@ -50,10 +47,6 @@ class AddModifyDialog(QDialog):
             labels = [column[1] for column in columns_info]
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
-            
-            
-            
-            
             
 
         self.inputs = {}
@@ -235,10 +228,7 @@ class AddModifyDialog(QDialog):
             VALUES ({values['gerant']},{db_manager.cursor.lastrowid }, date('now'))
             """
             
-            print(query)
             db_manager.execute_update(query, ())
-            
-            print("lien créer")
 
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
@@ -464,5 +454,3 @@ class QSuccursale(QWidget):
             print(f"Succursale mise à jour avec succès.")
         except Exception as e:
             print(f"Erreur lors de la mise à jour de la succursale: {e}")
-
-

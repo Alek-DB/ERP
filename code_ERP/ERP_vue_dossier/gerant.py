@@ -14,12 +14,12 @@ class QGerant(QWidget):
         # Titre de la fenêtre
         self.setWindowTitle("Gérant")
         
-        
         button1 = QPushButton("Stock")
         button1.clicked.connect(parent.basculer_vers_stock)
         button2 = QPushButton("Finance")
         button2.clicked.connect(parent.basculer_vers_finance)
         button3 = QPushButton("HR")
+        button3.clicked.connect(parent.basculer_vers_hr)
         button4 = QPushButton("Gérer employé")
         button5 = QPushButton("Gérer client")
         button6 = QPushButton("Fournisseur")

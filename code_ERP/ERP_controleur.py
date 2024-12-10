@@ -40,20 +40,8 @@ class Controleur:
             #verifier les regles d'affaire
             regle.verify_regles(self.db_manager)
             
-            sucursale = self.modele.get_succursales(username) #bascule selon le sucursale
-            print(sucursale)
+            self.basculer(username)                 
 
-            poste = self.modele.get_poste(username) #basculer selon poste
-            
-            value = list(role.roles.values())
-
-            if poste == value[1]:
-                self.vue.basculer_vers_gerant_global()
-            elif poste == value[4]:
-                self.vue.basculer_vers_employe(sucursale)  
-            elif poste == value[2]:
-                self.vue.basculer_vers_gerant(sucursale)            
-#           self.vue.basculer_vers_splash()  
             
         elif state == "bad":    # employé existe mais mauvais mot de passe
             self.vue.afficher_message("Erreur", "Mot de passe incorrect.")
@@ -77,9 +65,22 @@ class Controleur:
                     self.modele.créer_premier_employé(username, password)
                 else: 
                     self.modele.update_mdp(username,password)
-                self.vue.basculer_vers_splash()
+                self.basculer(username)
             except Exception as e:
                 print(e)
+
+    def basculer(self, username):
+            sucursale = self.modele.get_succursales(username) #bascule selon le sucursale
+            poste = self.modele.get_poste(username) #basculer selon poste    
+            value = list(role.roles.values())
+
+            if poste == value[1]:
+                self.vue.basculer_vers_gerant_global()
+            elif poste == value[4]:
+                self.vue.basculer_vers_splash()  
+            elif poste == value[2]:
+                sucursale = self.modele.get_succursales(username)
+                self.vue.basculer_vers_gerant(sucursale)  
 
     def enregistrer_vente(self):
         item, quantite, prix_unitaire, date = self.vue.obtenir_informations_vente()
@@ -88,8 +89,6 @@ class Controleur:
         else:
             self.vue.afficher_message("Erreur", "Erreur lors de l'enregistrement de la vente.")
 
-    def annuler_vente(self):
-        self.vue.basculer_vers_splash()
 
     def action_splash(self, action):
         if action == "stock":
