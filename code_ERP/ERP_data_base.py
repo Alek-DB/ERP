@@ -22,13 +22,15 @@ class DatabaseManager:
         self._create_tables()
 
     def _create_tables(self):
-        
+
+
         # Création de la table Employes
         self.cursor.execute("""
         CREATE TABLE IF NOT EXISTS Employes (
             id_employe INTEGER PRIMARY KEY AUTOINCREMENT,
             prenom TEXT NOT NULL,
             nom TEXT NOT NULL,
+            email TEXT NOT NULL,
             poste TEXT,
             salaire REAL,
             date_naissance TEXT,
@@ -36,7 +38,8 @@ class DatabaseManager:
             sexe TEXT CHECK(sexe IN ('M', 'F')),
             statut TEXT,
             allergies_preferences_alimentaires TEXT,
-            code_unique TEXT
+            mot_de_passe TEXT,
+            username TEXT NOT NULL UNIQUE
         )
         """)
 
@@ -70,6 +73,7 @@ class DatabaseManager:
             gerant INTEGER,
             adresse TEXT,
             telephone TEXT,
+            email TEXT NOT NULL,
             code TEXT,
             date_ouverture TEXT,
             statut TEXT,
@@ -97,8 +101,17 @@ class DatabaseManager:
             id_employe INTEGER NOT NULL,
             id_succursale INTEGER NOT NULL,
             date TEXT,
-            heure_entree TEXT,
-            heure_sortie TEXT,
+            heure_entree_lundi TEXT,
+            heure_sortie_lundi TEXT,
+            heure_sortie_mardi TEXT,
+            heure_entree_mardi TEXT,
+            heure_sortie_mercredi TEXT,
+            heure_entree_mercredi TEXT,
+            heure_sortie_jeudi TEXT,
+            heure_entree_jeudi TEXT,
+            heure_sortie_vendredi TEXT,
+            heure_entree_vendredi TEXT,
+            
             statut TEXT,
             FOREIGN KEY (id_employe) REFERENCES Employes(id_employe),
             FOREIGN KEY (id_succursale) REFERENCES Succursales(id_succursale)
@@ -113,7 +126,8 @@ class DatabaseManager:
             prenom TEXT NOT NULL,
             adresse TEXT,
             telephone TEXT,
-            email TEXT,
+            date_naissance TEXT,
+            email TEXT NOT NULL,
             date_inscription TEXT,
             statut TEXT,
             notes TEXT
@@ -331,6 +345,23 @@ class DatabaseManager:
         )
         """)
         
+        #création de la table Regle d'affaire
+        self.cursor.execute("""
+        CREATE TABLE IF NOT EXISTS Regle_affaires (
+            id_regle_affaire INTEGER PRIMARY KEY AUTOINCREMENT,
+            table_name TEXT,
+            champ_name TEXT,
+            operateur TEXT,
+            valeur TEXT,
+            action TEXT,
+            desc TEXT,
+            date_send TEXT,
+            statut TEXT,
+            date_debut TEXT,
+            date_fin TEXT
+        )
+        """)
+        
         self._ensure_columns_exist('Fournisseurs', {
         'telephone': 'TEXT'
         })
@@ -370,7 +401,10 @@ class DatabaseManager:
 
     def __del__(self):
         self.close_connection()
-
+        
+    def get_column_names(self):
+        """Retourne les noms des colonnes d'un curseur SQLite."""
+        return [description[0] for description in self.cursor.description]
         
         
     def get_all_stocks(self):
@@ -380,11 +414,6 @@ class DatabaseManager:
         JOIN Produits ON Stocks.id_produit = Produits.id_produit
         """
         return self.execute_query(query)
-
-    
-    def get_column_names(self):
-        return [description[0] for description in self.cursor.description]
-
 
 
 

@@ -1,8 +1,8 @@
-#from ERP_role import Role
+from ERP_role import Role
+from ERP_employeDAO import EmployeDAO
 
 class Employe:
-    def __init__(self, id_employe, prenom, nom, poste, salaire, date_naissance, date_embauche, sexe, statut, allergies_preferences_alimentaires, code_unique, role):
-        self.id_employe = id_employe
+    def __init__(self, prenom, nom, poste, salaire, date_naissance, date_embauche, sexe, statut, allergies, code_unique, role):
         self.prenom = prenom
         self.nom = nom
         self.poste = poste
@@ -11,7 +11,7 @@ class Employe:
         self.date_embauche = date_embauche
         self.sexe = sexe
         self.statut = statut
-        self.allergies_preferences_alimentaires = allergies_preferences_alimentaires
+        self.allergies = allergies
         self.code_unique = code_unique
         self.role = role  # Rôle en tant que numéro
 
@@ -52,3 +52,8 @@ class Employe:
 
     def modifier_role(self, role):
         self.role = role  # Méthode pour modifier le rôle
+
+    def add_to_db(self):
+        dao = EmployeDAO()
+        role_str = Role.get_role_name(self.role)
+        return dao.add_employe(self)
