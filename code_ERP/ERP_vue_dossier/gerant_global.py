@@ -44,11 +44,8 @@ class QGerantGlobal(QWidget):
         button_layout.addWidget(button4)
         button_layout.addWidget(button5)
         button_layout.addWidget(button6)
-<<<<<<< HEAD
-
-=======
         button_layout.addWidget(button7)
->>>>>>> 5491f083ac6736cfb2db005dddc20b8cb9b2a141
+
         # Ajouter du padding entre les boutons
         button_layout.setSpacing(30)  # Espacement entre les boutons
         button_layout.setContentsMargins(50, 50, 50, 50)  # Marges de la mise en page
