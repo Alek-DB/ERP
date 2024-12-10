@@ -64,7 +64,7 @@ class AddModifyDialog(QDialog):
             # CAR JE VEUX AFFICHER TOUT LES GERANT POSSIBLE EN ALLANT LES CHERCHER DANS LA BADE DE DONNÉE
             elif label == "gerant":                                 
                 input_field = QComboBox()
-                gerants = db_manager.execute_query("SELECT id_employe, prenom, nom FROM Employes WHERE poste = 'Gérant'")
+                gerants = db_manager.execute_query("SELECT id_employe, prenom, nom FROM Employes WHERE poste = 'Gérant (Magasin)'")
                 for gérant in gerants:
                     gérant_nom = f"{gérant[0]}, {gérant[1]} {gérant[2]}"  # Prenom + Nom
                     input_field.addItem(gérant_nom)  # Ajouter le nom complet avec l'ID
@@ -217,6 +217,18 @@ class AddModifyDialog(QDialog):
         except sqlite3.Error as e:
             print(f"Une erreur est survenue lors de la créationd'une succursale : {e}")
         
+
+        try:
+            db_manager = DatabaseManager('erp_database.db')
+
+            #supprimer l'ancien lien
+            query = f"""
+            DELETE FROM Employes_Succursales where id_employe = ?
+            """
+            db_manager.execute_update(query, (values['gerant']))
+
+        except sqlite3.Error as e:
+            print(f"Une erreur est survenue : {e}")
         
         # VOUS POUVEZ ARRETER ICI SI VOUS N'AVEZ PAS D'AUTRE TABLE A AFFECTÉ 
             #CÉRATION LIEN EMPLOYÉ SUCCURSALE

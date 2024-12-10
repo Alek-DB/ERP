@@ -614,6 +614,8 @@ class QClient(QWidget):
                 
                 if self.all_rabais :  self.total_commande = max(0,round(prix_final,2))
                 
+                self.total_commande *= 1.15 #taxes
+                
                 # Insérer la commande
                 query_commande = """
                 INSERT INTO Commandes (id_client, date_commande, statut, total)

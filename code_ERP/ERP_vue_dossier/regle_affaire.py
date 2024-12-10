@@ -5,6 +5,7 @@ from ERP_data_base import DatabaseManager
 import re
 import sqlite3
 from ERP_vue_dossier.rabais import *
+from datetime import datetime
 
 class QRegleAffaire(QWidget):
     def __init__(self, parent=None):
@@ -27,7 +28,7 @@ class QRegleAffaire(QWidget):
         btn.clicked.connect(parent.basculer_vers_afficher_regles_affaire)
         layout.addWidget(btn, alignment=Qt.AlignCenter)
         
-        self.operateurs = operateurs
+        self.operateurs = ["<", "<=", ">", ">=", "=="]
         
         # Création du formulaire pour la règle d'affaire
         form_layout = QVBoxLayout()
@@ -54,8 +55,8 @@ class QRegleAffaire(QWidget):
         # Sélection de l'opérateur
         self.combo_operateurs = QComboBox(self)
         self.combo_operateurs.addItem("Sélectionnez un opérateur")
-        for key, value in self.operateurs.items():
-            self.combo_operateurs.addItem(key)
+        for value in self.operateurs:
+            self.combo_operateurs.addItem(value)
         self.operateur_label = QLabel("Opérateur:")
         form_layout.addWidget(self.operateur_label)
         form_layout.addWidget(self.combo_operateurs)
@@ -259,6 +260,32 @@ class QRegleAffaire(QWidget):
             QMessageBox.critical(None, "Erreur", f"Valeur vide mais table n'est pas Clients ou Employés")
             return
         
+        if action == "Envoyer email":
+            try:
+                date = datetime.strptime(date, "%Y-%m-%d")
+            except ValueError:
+                QMessageBox.critical(None, "Erreur", f"La date n'est pas du bon format")
+                return
+    
+
+        if action == "Appliquer rabais":
+            try: 
+                float(valeur)
+                float(desc)
+            except:
+                QMessageBox.critical(None, "Erreur", f"L'une de vos valeur n'est pas un nombre")
+                return
+            try:
+                date = datetime.strptime(date_debut, "%Y-%m-%d")
+                date = datetime.strptime(date_fin, "%Y-%m-%d")
+            except ValueError:
+                QMessageBox.critical(None, "Erreur", f"Une des dates n'est pas du bon format")
+                return
+            
+        if self.combo_operateurs.currentText() == "Sélectionnez un opérateur":
+            QMessageBox.critical(None, "Erreur", f"Veuillez choisir un opérateur")
+            return
+
         try:
             if action == "Envoyer email":
             # si j'envoi un email a tout mes employés ou clients, faire plusieurs regles d'affaire
@@ -274,7 +301,7 @@ class QRegleAffaire(QWidget):
                                 
                             query = f"""
                             INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc, date_send, statut)
-                            VALUES ("{table}", "id_employe", "{self.operateurs.get(operateur)}", "{element[0]}", "{action}", "{desc}", "{date_msg}", "{status}")
+                            VALUES ("{table}", "id_employe", "{operateur}", "{element[0]}", "{action}", "{desc}", "{date_msg}", "{status}")
                             """
                         elif table == "Clients":
                             if date == "naissance":
@@ -282,26 +309,22 @@ class QRegleAffaire(QWidget):
                                 status = "infinite"
                             query = f"""
                             INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc, date_send, statut)
-                            VALUES ("{table}", "id_client", "{self.operateurs.get(operateur)}", "{element[0]}", "{action}", "{desc}", "{date_msg}", "{status}")
+                            VALUES ("{table}", "id_client", "{operateur}", "{element[0]}", "{action}", "{desc}", "{date_msg}", "{status}")
                             """
                         self.db_manager.execute_update(query, ())
-                        print(f"regle créer pour {table}, {date_msg}")
                 else:
                     # sinon crée juste une regle
                     query = f"""
                     INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc, date_send, statut)
-                    VALUES ("{table}", "{champ}", "{self.operateurs.get(operateur)}", "{valeur}", "{action}", "{desc}", "{date}", "pending")
+                    VALUES ("{table}", "{champ}", "{operateur}", "{valeur}", "{action}", "{desc}", "{date}", "pending")
                     """
             elif action == "Appliquer rabais":
                 query =f"""
                     INSERT INTO Regle_affaires (table_name, champ_name, operateur, valeur, action, desc,  date_debut, date_fin, statut)
-                    VALUES ("{table}", "{champ}", "{self.operateurs.get(operateur)}", "{valeur}", "{action}", "{desc}", "{date_debut}", "{date_fin}" ,"pending")
+                    VALUES ("{table}", "{champ}", "{operateur}", "{valeur}", "{action}", "{desc}", "{date_debut}", "{date_fin}" ,"pending")
                     """
                 
-            QMessageBox.warning(None, "", f"Votre règle à été enregistré")
+            QMessageBox.information(None, "", f"Votre règle à été enregistré")
             self.db_manager.execute_update(query, ())
         except sqlite3.Error as e:
             print(f"Une erreur est survenue lors de l'enregistrement de la règle d'affaire : {e}")
-
-        # Afficher un message de confirmation
-        print(f"Règle d'affaire enregistrée : {champ_selectionne} {operateur} {valeur} -> {action} avec valeur {desc}")

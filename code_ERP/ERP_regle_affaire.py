@@ -47,22 +47,18 @@ def verify_regles(db_manager, client_id = None):
                     
             elif action == "Appliquer rabais":
 
-                # Conversion des chaînes de caractères en objets datetime
+                #Conversion des chaînes de caractères en objets datetime
                 date_debut = datetime.strptime(date_debut, "%Y-%m-%d")
                 date_fin = datetime.strptime(date_fin, "%Y-%m-%d")
                 date_aujourdhui = datetime.today()
 
-                #trouver operateur
-                for keys, values in operateurs.items():
-                    if values == operateur:
-                        op = keys
-                        
-
                 # Vérifier si la date actuelle est entre date_debut et date_fin incluses
                 if date_debut <= date_aujourdhui <= date_fin:
-                    all_rabais.append(Rabais(message, op, valeur))
+                    all_rabais.append(Rabais(message, operateur, valeur))
                 elif date_aujourdhui > date_fin:
+                    print("done", date_aujourdhui, date_fin)
                     db_manager.execute_query(f"Delete FROM Regle_affaires WHERE id_regle_affaire = '{id}'",())
+                pass
 
     if action == "Appliquer rabais":
         return all_rabais
