@@ -3,3 +3,5 @@ class Emplacement:
     succursalesId = 0
     employeID = 0
     employeHoraire = 0
+    employeUsername = ""
+    employeRole = ""

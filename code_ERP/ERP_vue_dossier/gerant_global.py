@@ -5,7 +5,6 @@ class QGerantGlobal(QWidget):
     def __init__(self, parent):
         super().__init__()
         
-        self.setStyleSheet("QPushButton{padding: 10px; background-color:white; border:2px solid black;}  QPushButton:pressed{background-color:#cacccf;}")
 
         # Titre de la fenêtre
         self.setWindowTitle("Gérant global")
@@ -59,7 +58,6 @@ class QGerantGlobal(QWidget):
         # Bouton en haut à droite
         back_button = QPushButton("<-")
         back_button.clicked.connect(parent.basculer_before)
-        back_button.setFixedSize(70, 50)  # Ajustez la taille du bouton si nécessaire
 
         # Layout pour le bouton de retour
         back_button_layout = QHBoxLayout()

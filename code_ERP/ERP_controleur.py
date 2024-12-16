@@ -9,6 +9,7 @@ from ERP_vue import Vue
 from ERP_data_base import DatabaseManager
 import ERP_regle_affaire as regle
 import ERP_role as role
+from ERP_emplacement import Emplacement
 
 
 
@@ -34,7 +35,6 @@ class Controleur:
         state = self.modele.verifier_identifiants(username, password)
         
         if state == "good":
-            #VERIFIER LE ROLE DE L'UTILISATEUR ET LE BASCULER SUR LA PAGE DE SON ROLE
             self.vue.afficher_message("Succès", "Connexion réussie !")
 
             
@@ -75,7 +75,9 @@ class Controleur:
             sucursale = self.modele.get_succursales(username) #bascule selon le sucursale
             poste = self.modele.get_poste(username) #basculer selon poste    
             value = list(role.roles.values())
-
+            
+            Emplacement.employeUsername = username
+            Emplacement.employeRole = poste
             if poste == value[1]:
                 self.vue.basculer_vers_gerant_global()
             elif poste == value[4]:

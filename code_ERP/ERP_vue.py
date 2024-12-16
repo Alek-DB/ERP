@@ -41,8 +41,34 @@ class Vue(QMainWindow):
         self.setWindowTitle("Application ERP")
         self.setGeometry(100, 100, 800, 600)
 
+
+        main_widget = QWidget()
+        main_widget.setObjectName("main")
+        self.setCentralWidget(main_widget)
+        main_widget.setStyleSheet("""#main{background-color:'white'} 
+                                  QPushButton{padding: 10px; background-color:white; border:2px solid black; width:110px; border-radius:5px}  
+                                  QPushButton:pressed{background-color:#cacccf;}""")
+
+        layout = QVBoxLayout(main_widget)
+
+        info_widget = QWidget()
+        info_layout = QVBoxLayout()
+        info_widget.setObjectName("info")
+        info_widget.setStyleSheet("#info{border-radius:10px; border:2px solid black; background-color:'#e6e6e6'} QLabel{font-size: 14px; font-weight: bold;}")
+        info_widget.setLayout(info_layout)
+
+        self.username_text = QLabel()
+        self.role_text = QLabel()
+        self.succursale_text = QLabel()
+        info_layout.addWidget(self.username_text)
+        info_layout.addWidget(self.role_text)
+        info_layout.addWidget(self.succursale_text)
+
+        layout.addWidget(info_widget)
+
         self.stacked_widget = QStackedWidget()
-        self.setCentralWidget(self.stacked_widget)
+        self.stacked_widget.setStyleSheet("QStackedWidget{background-color:'#e6e6e6'; border-radius:10px; border:2px solid black}")
+        layout.addWidget(self.stacked_widget)
 
         # Création des différents frames
         self.frame_connexion = QConnexion(self)
@@ -79,17 +105,10 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_greant_global)
         self.stacked_widget.addWidget(self.frame_succursale)
         self.stacked_widget.addWidget(self.frame_finance)
-
-        self.stacked_widget.addWidget(self.frame_produit)
-        self.stacked_widget.addWidget(self.frame_fournisseur)
         self.stacked_widget.addWidget(self.frame_finance_report)
         self.stacked_widget.addWidget(self.frame_fournisseur_report)
         self.stacked_widget.addWidget(self.frame_fournisseur_commande)
-
-
-
         self.stacked_widget.addWidget(self.frame_gerant)
-
         self.stacked_widget.addWidget(self.frame_employe)
         self.stacked_widget.addWidget(self.frame_produit)
         self.stacked_widget.addWidget(self.frame_fournisseur)
@@ -98,9 +117,6 @@ class Vue(QMainWindow):
         self.stacked_widget.addWidget(self.frame_hr)
         self.stacked_widget.addWidget(self.frame_hr_commandes)
         self.stacked_widget.addWidget(self.frame_hr_employe)
-        
-
-
         self.stacked_widget.addWidget(self.frame_ajouter_employe)
         self.stacked_widget.addWidget(self.frame_ajout_champ)
         self.stacked_widget.addWidget(self.frame_gerer_employe)
@@ -183,6 +199,7 @@ class Vue(QMainWindow):
         
     def basculer_vers_gerant_global(self):
         Emplacement.succursalesId = -1
+        self.set_info()
         self.history.append(self.stacked_widget.currentWidget())
         self.stacked_widget.setCurrentWidget(self.frame_greant_global)
 
@@ -231,11 +248,13 @@ class Vue(QMainWindow):
     def basculer_vers_employe(self, id): # baculer vers la succursale
         self.history.append(self.stacked_widget.currentWidget())
         Emplacement.succursalesId = id
+        self.set_info()
         self.stacked_widget.setCurrentWidget(self.frame_employe)
         
     def basculer_vers_gerant(self, id): # baculer vers la succursale
         self.history.append(self.stacked_widget.currentWidget())
         Emplacement.succursalesId = id
+        self.set_info()
         self.stacked_widget.setCurrentWidget(self.frame_gerant)
         
     # vers hr    
@@ -264,8 +283,9 @@ class Vue(QMainWindow):
         if self.history:
             previous_widget = self.history.pop()  # Retirer le dernier widget visité
             
-            if previous_widget == self.frame_greant_global: 
+            if previous_widget == self.frame_greant_global or previous_widget == self.frame_succursale: 
                 Emplacement.succursalesId = -1
+                self.set_info()
             if previous_widget == self.frame_gerer_employe: 
                 self.frame_gerer_employe.load_employe()
             
@@ -289,3 +309,9 @@ class Vue(QMainWindow):
         self.history.append(self.stacked_widget.currentWidget())
         self.frame_affiche_regle.load_data()
         self.stacked_widget.setCurrentWidget(self.frame_affiche_regle)
+
+
+    def set_info(self):
+        self.username_text.setText("Username : " + Emplacement.employeUsername)
+        self.role_text.setText("Rôle : " + Emplacement.employeRole)
+        self.succursale_text.setText("Succursale : " + ("global" if Emplacement.succursalesId == -1 else Emplacement.succursalesId))
