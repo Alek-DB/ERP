@@ -462,6 +462,8 @@ class QClient(QWidget):
             
             
             self.all_rabais = regle.verify_regles(self.db_manager, client_id) or []
+            print("allo")
+            print(self.all_rabais)
             if self.all_rabais: 
                 text = ""
                 for rabais in self.all_rabais:

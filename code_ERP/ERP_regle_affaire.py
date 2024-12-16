@@ -53,6 +53,9 @@ def verify_regles(db_manager, client_id = None):
                     return
                 date_aujourdhui = datetime.today()
 
+                print(date_debut)
+                print(date_aujourdhui)
+                print(date_fin)
                 # Vérifier si la date actuelle est entre date_debut et date_fin incluses
                 if date_debut <= date_aujourdhui <= date_fin:
                     all_rabais.append(Rabais(message, operateur, valeur))
