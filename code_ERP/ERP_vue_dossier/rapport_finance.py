@@ -66,9 +66,6 @@ class QFinanceReport(QWidget):
     def set_financial_data(self):
         
         self.succursale = Emplacement.succursalesId
-        print("yo")
-        print(self.succursale)
-        
         expenses = self.get_total_expenses()
         profits = self.get_total_profits()
         salaries = self.get_total_salaries()

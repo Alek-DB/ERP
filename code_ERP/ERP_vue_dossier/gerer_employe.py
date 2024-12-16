@@ -374,7 +374,7 @@ class QGereEmploye(QWidget):
             print(f"Erreur lors de la mise à jour de l'employé: {e}")
             
     def horaire_item(self):
-        selected_items = self.succursale_table.selectedItems()
+        selected_items = self.employe_table.selectedItems()
         if not selected_items:
             QMessageBox.warning(self, "Attention", "Veuillez sélectionner un produit à supprimer.")
             return

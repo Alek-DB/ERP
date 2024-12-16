@@ -171,14 +171,12 @@ class QStock(QWidget):
         remove_button = QPushButton("Retirer")
         modify_button = QPushButton("Modifier")
         back_button = QPushButton("<-")
-        supplier_button = QPushButton("Fournisseur")
 
         button_layout = QVBoxLayout()
         button_layout.addWidget(back_button)
         button_layout.addWidget(add_button)
         button_layout.addWidget(remove_button)
         button_layout.addWidget(modify_button)
-        button_layout.addWidget(supplier_button)
 
         # Add button layout to the grid
         stock_layout.addLayout(button_layout, 0, 0)

@@ -575,7 +575,7 @@ class QClient(QWidget):
             # regrde si les rabais s'applique
             if self.all_rabais:
                 for rabais in self.all_rabais:
-                    has_rabais = self.evaluate_condition(self.prix_afficher, rabais.operateur, rabais.value)
+                    has_rabais = eval(f"{self.prix_afficher} {rabais.operateur} {rabais.value}")
                     if has_rabais: 
                         self.prix_afficher -= self.prix_afficher * (rabais.rabais / 100)
                     

@@ -4,6 +4,7 @@ class Role:
     ROLE_GERANT = 3
     ROLE_HR = 4
     ROLE_COMMIS = 5
+    ROLE_FINANCE = 6
 
     @staticmethod
     def get_role_name(role):
@@ -14,5 +15,6 @@ roles = {
     Role.ROLE_GERANT_GLOBAL: "Gérant Global",
     Role.ROLE_GERANT: "Gérant (Magasin)",    
     Role.ROLE_HR: "HR",
-    Role.ROLE_COMMIS: "Commis"
+    Role.ROLE_COMMIS: "Commis",
+    Role.ROLE_FINANCE: "Finance",
 }

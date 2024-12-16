@@ -75,16 +75,21 @@ class Controleur:
             sucursale = self.modele.get_succursales(username) #bascule selon le sucursale
             poste = self.modele.get_poste(username) #basculer selon poste    
             value = list(role.roles.values())
+            sucursale = self.modele.get_succursales(username)
             
             Emplacement.employeUsername = username
             Emplacement.employeRole = poste
-            if poste == value[1]:
+            Emplacement.succursalesId = sucursale
+            if poste == value[1] or poste == value[0]: #gérant global et admin
                 self.vue.basculer_vers_gerant_global()
-            elif poste == value[4]:
-                self.vue.basculer_vers_splash()  
-            elif poste == value[2]:
-                sucursale = self.modele.get_succursales(username)
+            elif poste == value[2]: # gérant
                 self.vue.basculer_vers_gerant(sucursale)  
+            elif poste == value[3]: # hr
+                self.vue.basculer_vers_hr()  
+            elif poste == value[4]: #commis
+                self.vue.basculer_vers_employe(sucursale)  
+            elif poste == value[5]: # Finance
+                self.vue.basculer_vers_finance()  
 
     def enregistrer_vente(self):
         item, quantite, prix_unitaire, date = self.vue.obtenir_informations_vente()

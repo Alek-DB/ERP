@@ -19,14 +19,11 @@ def verify_regles(db_manager, client_id = None):
         date_debut = regle[9]
         date_fin = regle[10]
         
-        print(f"{table} - {champ} - {valeur} - {action} - {message} - {statut} - {date}")   
-        
-        
         #switch de l'action
         if statut == "pending" or statut == "infinite":
             if action == "Envoyer email":
-
-                if (statut == "pending" and date == datetime.now().strftime('%Y-%m-%d')) or (statut == "infinite" and date[5:] == datetime.now().strftime('%Y-%m-%d')[5:]): # si c'est la date d'aujourd'hui                
+                if (statut == "pending" and date[:10] == datetime.now().strftime('%Y-%m-%d')) or (statut == "infinite" and date[5:10] == datetime.now().strftime('%Y-%m-%d')[5:]): # si c'est la date d'aujourd'hui                
+                    
                     if valeur == "": # si la valeur est vide envoyer email a toute la table
                         result = db_manager.execute_query(f"SELECT email FROM {table}",())
                         for email in result:
@@ -60,7 +57,6 @@ def verify_regles(db_manager, client_id = None):
                 if date_debut <= date_aujourdhui <= date_fin:
                     all_rabais.append(Rabais(message, operateur, valeur))
                 elif date_aujourdhui > date_fin:
-                    print("done", date_aujourdhui, date_fin)
                     db_manager.execute_query(f"Delete FROM Regle_affaires WHERE id_regle_affaire = '{id}'",())
                 pass
 
