@@ -48,8 +48,12 @@ def verify_regles(db_manager, client_id = None):
             elif action == "Appliquer rabais":
 
                 #Conversion des chaînes de caractères en objets datetime
-                date_debut = datetime.strptime(date_debut, "%Y-%m-%d")
-                date_fin = datetime.strptime(date_fin, "%Y-%m-%d")
+                try:
+                    date_debut = datetime.strptime(date_debut, "%Y-%m-%d")
+                    date_fin = datetime.strptime(date_fin, "%Y-%m-%d")
+                except:
+                    db_manager.execute_query(f"Delete FROM Regle_affaires WHERE id_regle_affaire = '{id}'",())
+                    return
                 date_aujourdhui = datetime.today()
 
                 # Vérifier si la date actuelle est entre date_debut et date_fin incluses

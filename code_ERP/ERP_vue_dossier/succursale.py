@@ -287,13 +287,8 @@ class QSuccursale(QWidget):
         title_label.setAlignment(Qt.AlignCenter)
         succursale_layout.addWidget(title_label, 0, 1)
 
-        # Search bar
-        search_label = QLabel("Rechercher :")
-        search_input = QLineEdit()
 
         search_layout = QHBoxLayout()
-        search_layout.addWidget(search_label)
-        search_layout.addWidget(search_input)
         succursale_layout.addLayout(search_layout, 1, 1)
 
         self.succursale_table = QTableWidget()
