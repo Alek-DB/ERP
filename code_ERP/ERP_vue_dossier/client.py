@@ -461,12 +461,13 @@ class QClient(QWidget):
             self.setWindowTitle("Créer Commande")
             
             
-            self.all_rabais = regle.verify_regles(self.db_manager, client_id)
+            self.all_rabais = regle.verify_regles(self.db_manager, client_id) or []
             if self.all_rabais: 
                 text = ""
                 for rabais in self.all_rabais:
                     text += rabais.title + "\n"
                 QMessageBox.warning(self, "Attention", text)
+
             
 
             layout = QVBoxLayout()
@@ -572,10 +573,11 @@ class QClient(QWidget):
             self.total_commande += prix_unitaire
             self.prix_afficher = self.total_commande
             # regrde si les rabais s'applique
-            for rabais in self.all_rabais:
-                has_rabais = eval(f"{self.prix_afficher} {rabais.operateur} {rabais.value}")
-                if has_rabais: 
-                    self.prix_afficher -= self.prix_afficher * (rabais.rabais / 100)
+            if self.all_rabais:
+                for rabais in self.all_rabais:
+                    has_rabais = self.evaluate_condition(self.prix_afficher, rabais.operateur, rabais.value)
+                    if has_rabais: 
+                        self.prix_afficher -= self.prix_afficher * (rabais.rabais / 100)
                     
             if self.all_rabais: 
                 self.panier_total.setText(f"Panier : { max(0,round((self.prix_afficher), 2)) }$")

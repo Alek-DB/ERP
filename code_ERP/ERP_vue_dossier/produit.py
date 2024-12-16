@@ -1,13 +1,9 @@
-from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton, QGridLayout, QHBoxLayout, QMessageBox
-from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
-    QWidget, QPushButton, QLabel, QLineEdit, QTableWidget, 
-    QTableWidgetItem, QVBoxLayout, QHBoxLayout, QGridLayout, QMessageBox
+    QDialog, QLabel, QLineEdit, QPushButton, QGridLayout, 
+    QHBoxLayout, QMessageBox, QComboBox, QWidget, QTableWidget, 
+    QTableWidgetItem, QVBoxLayout
 )
 from PySide6.QtCore import Qt
-
-from PySide6.QtWidgets import QDialog, QLabel, QLineEdit, QPushButton, QGridLayout, QHBoxLayout, QMessageBox, QComboBox
-from PySide6.QtCore import Signal
 from ERP_data_base import DatabaseManager
 import sqlite3
 
@@ -32,33 +28,14 @@ class AddModifyDialog(QDialog):
             column_query = "PRAGMA table_info(Produits);"
             columns_info = db_manager.execute_query(column_query)
             labels = [column[1] for column in columns_info if column[1] != 'id_produit']
-
-            # Obtenir les colonnes de la table Stocks
-            column_query = "PRAGMA table_info(Stocks);"
-            columns_info = db_manager.execute_query(column_query)
-            stock_labels = [column[1] for column in columns_info if column[1] not in ('id_stock', 'id_produit', 'id_succursale')]
-
-            labels.extend(stock_labels)
-            labels.append('id_succursale')  # Ajouter le champ pour la succursale
-
         except sqlite3.Error as e:
             print(f"Une erreur est survenue : {e}")
 
         self.inputs = {}
-        # Crée les labels selon les champs de la table
+        # Crée les labels selon les champs de la table Produits
         for i, label in enumerate(labels):
             lbl = QLabel(label)
-
-            if label == "id_succursale":
-                # Créer un QComboBox pour le champ Succursale
-                input_field = QComboBox()
-                succursales = db_manager.execute_query("SELECT id_succursale, nom FROM Succursales")
-                for succursale in succursales:
-                    succursale_text = f"{succursale['id_succursale']}, {succursale['nom']}"
-                    input_field.addItem(succursale_text)
-            else:
-                input_field = QLineEdit()
-
+            input_field = QLineEdit()
             layout.addWidget(lbl, i, 0)
             layout.addWidget(input_field, i, 1)
             self.inputs[label] = input_field
@@ -95,38 +72,19 @@ class AddModifyDialog(QDialog):
         if self.product_data:
             for label in self.inputs.keys():
                 value = self.product_data.get(label, '')
-                if isinstance(self.inputs[label], QComboBox):
-                    # Pour le champ 'id_succursale'
-                    id_succursale = value
-                    try:
-                        db_manager = DatabaseManager('erp_database.db')
-                        query = "SELECT nom FROM Succursales WHERE id_succursale = ?"
-                        result = db_manager.execute_query(query, (id_succursale,))
-                        if result:
-                            nom_succursale = result[0]['nom']
-                            succursale_text = f"{id_succursale}, {nom_succursale}"
-                            self.inputs[label].setCurrentText(succursale_text)
-                    except sqlite3.Error as e:
-                        print(f"Erreur lors de la récupération de la succursale : {e}")
-                else:
-                    self.inputs[label].setText(str(value))
+                self.inputs[label].setText(str(value))
 
     def enregistrer(self):
         values = {}
         for label, input_field in self.inputs.items():
-            if isinstance(input_field, QComboBox):
-                selected_text = input_field.currentText()
-                id_succursale = selected_text.split(",")[0]
-                values[label] = int(id_succursale)
-            else:
-                values[label] = input_field.text()
+            values[label] = input_field.text()
 
         # Retirer 'id_produit' si présent
         values.pop('id_produit', None)
 
         # **Début de la validation des données**
         # Vérifier que les champs obligatoires sont remplis
-        required_fields = ['nom_produit', 'prix', 'qte_actuelle', 'qte_max', 'qte_min_restock', 'id_succursale']
+        required_fields = ['nom_produit', 'code_produit', 'prix', 'description']
         for field in required_fields:
             if not values.get(field):
                 QMessageBox.warning(self, "Attention", f"Le champ '{field}' est obligatoire.")
@@ -135,12 +93,8 @@ class AddModifyDialog(QDialog):
         # Vérifier que les champs numériques contiennent des nombres valides
         try:
             values['prix'] = float(values['prix'])
-            values['qte_actuelle'] = int(values['qte_actuelle'])
-            values['qte_max'] = int(values['qte_max'])
-            values['qte_min_restock'] = int(values['qte_min_restock'])
-            values['id_succursale'] = int(values['id_succursale'])
         except ValueError:
-            QMessageBox.warning(self, "Erreur", "Veuillez entrer des nombres valides pour les champs numériques.")
+            QMessageBox.warning(self, "Erreur", "Veuillez entrer un nombre valide pour le champ 'prix'.")
             return
         # **Fin de la validation des données**
 
@@ -156,24 +110,6 @@ class AddModifyDialog(QDialog):
             """
             db_manager.execute_update(query_produit, produit_values)
 
-            # Obtenir l'id_produit inséré
-            id_produit = db_manager.cursor.lastrowid
-
-            # Insérer dans la table Stocks
-            stock_columns = ['id_produit', 'id_succursale', 'qte_actuelle', 'qte_max', 'qte_min_restock']
-            stock_values = [
-                id_produit,
-                values.get('id_succursale'),
-                values.get('qte_actuelle'),
-                values.get('qte_max'),
-                values.get('qte_min_restock')
-            ]
-            query_stock = f"""
-            INSERT INTO Stocks ({', '.join(stock_columns)})
-            VALUES ({', '.join(['?'] * len(stock_columns))})
-            """
-            db_manager.execute_update(query_stock, stock_values)
-
             print("Le produit a été ajouté avec succès.")
             self.product_widget.load_data()
         except sqlite3.Error as e:
@@ -185,16 +121,11 @@ class AddModifyDialog(QDialog):
     def modify_product(self):
         values = {}
         for label, input_field in self.inputs.items():
-            if isinstance(input_field, QComboBox):
-                selected_text = input_field.currentText()
-                id_succursale = selected_text.split(",")[0]
-                values[label] = int(id_succursale)
-            else:
-                values[label] = input_field.text()
+            values[label] = input_field.text()
 
         # **Début de la validation des données**
         # Vérifier que les champs obligatoires sont remplis
-        required_fields = ['nom_produit', 'prix', 'qte_actuelle', 'qte_max', 'qte_min_restock', 'id_succursale']
+        required_fields = ['nom_produit', 'code_produit', 'prix', 'description']
         for field in required_fields:
             if not values.get(field):
                 QMessageBox.warning(self, "Attention", f"Le champ '{field}' est obligatoire.")
@@ -203,12 +134,8 @@ class AddModifyDialog(QDialog):
         # Vérifier que les champs numériques contiennent des nombres valides
         try:
             values['prix'] = float(values['prix'])
-            values['qte_actuelle'] = int(values['qte_actuelle'])
-            values['qte_max'] = int(values['qte_max'])
-            values['qte_min_restock'] = int(values['qte_min_restock'])
-            values['id_succursale'] = int(values['id_succursale'])
         except ValueError:
-            QMessageBox.warning(self, "Erreur", "Veuillez entrer des nombres valides pour les champs numériques.")
+            QMessageBox.warning(self, "Erreur", "Veuillez entrer un nombre valide pour le champ 'prix'.")
             return
         # **Fin de la validation des données**
 
@@ -225,21 +152,6 @@ class AddModifyDialog(QDialog):
             """
             db_manager.execute_update(query_produit, produit_values + [self.product_data['id_produit']])
 
-            # Mettre à jour la table Stocks
-            stock_columns = ['id_succursale', 'qte_actuelle', 'qte_max', 'qte_min_restock']
-            stock_values = [
-                values.get('id_succursale'),
-                values.get('qte_actuelle'),
-                values.get('qte_max'),
-                values.get('qte_min_restock')
-            ]
-            query_stock = f"""
-            UPDATE Stocks SET
-            {', '.join([f"{col} = ?" for col in stock_columns])}
-            WHERE id_produit = ?
-            """
-            db_manager.execute_update(query_stock, stock_values + [self.product_data['id_produit']])
-
             print("Le produit a été modifié avec succès.")
             self.product_widget.load_data()
         except sqlite3.Error as e:
@@ -251,7 +163,6 @@ class AddModifyDialog(QDialog):
     def closeEvent(self, event):
         # Si vous avez besoin de réinitialiser des boutons ou des signaux dans votre widget parent
         pass
-
 
 
 class QProduit(QWidget):
@@ -297,12 +208,16 @@ class QProduit(QWidget):
 
         # Stock table
         self.produit_table = QTableWidget()
+<<<<<<< HEAD
         self.produit_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.produit_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.produit_table.setSelectionMode(QTableWidget.SingleSelection)
         self.produit_table.setColumnCount(7)
+=======
+        self.produit_table.setColumnCount(4)  # Mise à jour du nombre de colonnes
+>>>>>>> cd0f4540d34bb4fdf0979d74daa6a8ce93648c00
         self.produit_table.setHorizontalHeaderLabels(
-            ["ID", "Nom", "Prix", "Description", "Max", "Quantité", "nb Restock"]
+            ["ID", "Nom", "Code", "Prix", "Description"]
         )
         produit_layout.addWidget(self.produit_table, 2, 1)
 
@@ -320,11 +235,7 @@ class QProduit(QWidget):
 
     def load_data(self):
         try:
-            query = """
-            SELECT p.*, s.qte_max, s.qte_actuelle, s.qte_min_restock
-            FROM Produits p
-            LEFT JOIN Stocks s ON p.id_produit = s.id_produit
-            """
+            query = "SELECT * FROM Produits"
             results = self.db_manager.execute_query(query)
             self.produit_table.setRowCount(0)  # Clear existing data
 
@@ -332,31 +243,15 @@ class QProduit(QWidget):
                 self.produit_table.insertRow(row_number)
                 self.produit_table.setItem(row_number, 0, QTableWidgetItem(str(row_data['id_produit'])))
                 self.produit_table.setItem(row_number, 1, QTableWidgetItem(row_data['nom_produit']))
-                self.produit_table.setItem(row_number, 2, QTableWidgetItem(str(row_data['prix'])))
-                self.produit_table.setItem(row_number, 3, QTableWidgetItem(str(row_data['description'])))
-                self.produit_table.setItem(row_number, 4, QTableWidgetItem(str(row_data['qte_actuelle'])))
-                self.produit_table.setItem(row_number, 5, QTableWidgetItem(str(row_data['qte_min_restock'])))
-                
-
-                # description = row_data['description'] or ''
-                # self.produit_table.setItem(row_number, 3, QTableWidgetItem(description))
-
-                # qte_max = row_data['qte_max'] if row_data['qte_max'] is not None else ''
-                # self.produit_table.setItem(row_number, 4, QTableWidgetItem(str(qte_max)))
-
-                # qte_actuelle = row_data['qte_actuelle'] if row_data['qte_actuelle'] is not None else ''
-                # self.produit_table.setItem(row_number, 5, QTableWidgetItem(str(qte_actuelle)))
-
-                # qte_min_restock = row_data['qte_min_restock'] if row_data['qte_min_restock'] is not None else ''
-                # self.produit_table.setItem(row_number, 6, QTableWidgetItem(str(qte_min_restock)))
-
+                self.produit_table.setItem(row_number, 2, QTableWidgetItem(row_data['code_produit']))
+                self.produit_table.setItem(row_number, 3, QTableWidgetItem(str(row_data['prix'])))
+                self.produit_table.setItem(row_number, 4, QTableWidgetItem(str(row_data['description'])))
         except Exception as e:
             QMessageBox.warning(self, "Erreur", f"Une erreur s'est produite lors du chargement des données : {e}")
 
     def add_item(self):
         dialog = AddModifyDialog(self, mode="Ajouter")
         dialog.exec_()
-
 
     def remove_item(self):
         selected_items = self.produit_table.selectedItems()
@@ -369,18 +264,16 @@ class QProduit(QWidget):
         produit_id = self.produit_table.item(row, 0).text()
 
         # Demander confirmation
-        reply = QMessageBox.question(self, 'Confirmation', 'Êtes-vous sûr de vouloir supprimer ce produit ?',
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(
+            self, 'Confirmation', 'Êtes-vous sûr de vouloir supprimer ce produit ?',
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No
+        )
         if reply == QMessageBox.Yes:
             try:
                 # Supprimer le produit
                 query = "DELETE FROM Produits WHERE id_produit = ?"
                 parameters = (produit_id,)
                 self.db_manager.execute_update(query, parameters)
-
-                # Supprimer le stock associé
-                query_stock = "DELETE FROM Stocks WHERE id_produit = ?"
-                self.db_manager.execute_update(query_stock, parameters)
 
                 # Mettre à jour l'affichage
                 self.load_data()
@@ -399,12 +292,7 @@ class QProduit(QWidget):
 
         # Récupérer les données actuelles du produit
         try:
-            query = """
-            SELECT p.*, s.qte_max, s.qte_actuelle, s.qte_min_restock, s.id_succursale
-            FROM Produits p
-            LEFT JOIN Stocks s ON p.id_produit = s.id_produit
-            WHERE p.id_produit = ?
-            """
+            query = "SELECT * FROM Produits WHERE id_produit = ?"
             parameters = (produit_id,)
             result = self.db_manager.execute_query(query, parameters)
             if result:
@@ -419,8 +307,6 @@ class QProduit(QWidget):
         # Ouvrir le dialogue avec les données existantes
         dialog = AddModifyDialog(self, mode="Modifier", product_data=produit_data)
         dialog.exec_()
-
-    
 
     def search_items(self):
         search_text = self.search_input.text().lower()
