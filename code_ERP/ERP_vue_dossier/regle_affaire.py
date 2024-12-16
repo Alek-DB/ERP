@@ -162,7 +162,7 @@ class QRegleAffaire(QWidget):
             self.operateur_label.setVisible(True)
             self.combo_champs.setVisible(True)
             self.combo_operateurs.setVisible(True)
-            self.combo_operateurs.setCurrentText("=")
+            self.combo_operateurs.setCurrentText("==")
             self.combo_operateurs.setEnabled(False)  # L'opérateur n'est pas nécessaire pour "Envoyer email"
             
             #valeur
@@ -262,7 +262,8 @@ class QRegleAffaire(QWidget):
         
         if action == "Envoyer email":
             try:
-                date = datetime.strptime(date, "%Y-%m-%d")
+                if date != "naissance":
+                    date = datetime.strptime(date, "%Y-%m-%d")
             except ValueError:
                 QMessageBox.critical(None, "Erreur", f"La date n'est pas du bon format")
                 return

@@ -314,4 +314,4 @@ class Vue(QMainWindow):
     def set_info(self):
         self.username_text.setText("Username : " + Emplacement.employeUsername)
         self.role_text.setText("Rôle : " + Emplacement.employeRole)
-        self.succursale_text.setText("Succursale : " + ("global" if Emplacement.succursalesId == -1 else Emplacement.succursalesId))
+        self.succursale_text.setText("Succursale : " + str("global" if Emplacement.succursalesId == -1 else Emplacement.succursalesId))
