@@ -247,10 +247,6 @@ class AddModifyDialog(QDialog):
 
         self.close()
 
-    def closeEvent(self, event):
-        self.succursale.modify_button.setStyleSheet("background-color: ;")
-        self.succursale.succursale_table.itemClicked.disconnect()
-
         
         
         
@@ -288,14 +284,20 @@ class QSuccursale(QWidget):
         succursale_layout.addWidget(title_label, 0, 1)
 
 
+        # Search bar
+        search_label = QLabel("Rechercher :")
+        self.search_input = QLineEdit()
+        self.search_input.textChanged.connect(self.search_items)
+
         search_layout = QHBoxLayout()
+        search_layout.addWidget(search_label)
+        search_layout.addWidget(self.search_input)
         succursale_layout.addLayout(search_layout, 1, 1)
 
         self.succursale_table = QTableWidget()
         self.succursale_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.succursale_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.succursale_table.setSelectionMode(QTableWidget.SingleSelection)
-        self.modify_item()
         self.setLayout(succursale_layout)
         self.load_succursale()
 
@@ -351,16 +353,13 @@ class QSuccursale(QWidget):
         dialog.exec_()
         
     def remove_item(self):
-        self.succursale_table.itemClicked.disconnect()
-        self.remove_button.setStyleSheet("background-color: lightCoral;")
-        self.modify_button.setStyleSheet("background-color: ;")
-        self.open_button.setStyleSheet("background-color: ;")
-        self.succursale_table.itemClicked.connect(self.confirm_deletion)
-
-    def confirm_deletion(self, item):
+        selected_items = self.succursale_table.selectedItems()
+        if not selected_items:
+            QMessageBox.warning(self, "Attention", "Veuillez sélectionner un produit à supprimer.")
+            return
         """Demander confirmation avant de supprimer un élément."""
         # Obtenir la ligne de l'élément sélectionné
-        row = item.row()
+        row = selected_items[0].row()
 
         nom_succursale = self.succursale_table.item(row, 1).text()
         id_succursale = self.succursale_table.item(row, 0).text()
@@ -383,6 +382,7 @@ class QSuccursale(QWidget):
         self.succursale_table.itemClicked.disconnect()
         self.remove_button.setStyleSheet("background-color: ;")
         self.load_succursale()
+        
 
     def delete_succursale(self, id_succursale):
         try:
@@ -396,14 +396,12 @@ class QSuccursale(QWidget):
             print(f"Erreur lors de la suppression de la succursale: {e}") 
 
     def modify_item(self):
-        self.succursale_table.itemClicked.disconnect()
-        self.modify_button.setStyleSheet("background-color: lightgreen;")
-        self.remove_button.setStyleSheet("background-color: ;")
-        self.open_button.setStyleSheet("background-color: ;")
-        self.succursale_table.itemClicked.connect(self.open_modify_dialog)
+        selected_items = self.succursale_table.selectedItems()
+        if not selected_items:
+            QMessageBox.warning(self, "Attention", "Veuillez sélectionner un produit à modifier.")
+            return
         
-    def open_modify_dialog(self, item):
-        row = item.row()
+        row = selected_items[0].row()
 
         succursale_id = self.succursale_table.item(row, 0).text()  # Ajustez selon votre structure
 
@@ -420,16 +418,17 @@ class QSuccursale(QWidget):
         # Ouvrir le dialogue en mode modification
         dialog = AddModifyDialog(self, mode="Modifier", product_data=product_data)
         dialog.exec_()
+
        
     def open_succursale(self):
-        self.succursale_table.itemClicked.disconnect()
-        self.open_button.setStyleSheet("background-color: lightblue;")
-        self.remove_button.setStyleSheet("background-color: ;")
-        self.modify_button.setStyleSheet("background-color: ;")
-        self.succursale_table.itemClicked.connect(self.go_to)
+        selected_items = self.succursale_table.selectedItems()
+        if not selected_items:
+            QMessageBox.warning(self, "Attention", "Veuillez sélectionner un produit à ouvrir.")
+            return
+        row = selected_items[0].row()
+        self.vue.basculer_vers_gerant(self.succursale_table.item(row, 0).text())
         
-    def go_to(self, item):
-        self.vue.basculer_vers_gerant(self.succursale_table.item(item.row(), 0).text())
+
 
 
 
@@ -461,3 +460,13 @@ class QSuccursale(QWidget):
             print(f"Succursale mise à jour avec succès.")
         except Exception as e:
             print(f"Erreur lors de la mise à jour de la succursale: {e}")
+            
+            
+    def search_items(self):
+        search_text = self.search_input.text().lower()
+        for row in range(self.succursale_table.rowCount()):
+            item = self.succursale_table.item(row, 1)  # Nom du produit
+            if search_text in item.text().lower():
+                self.succursale_table.setRowHidden(row, False)
+            else:
+                self.succursale_table.setRowHidden(row, True)

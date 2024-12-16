@@ -297,6 +297,9 @@ class QProduit(QWidget):
 
         # Stock table
         self.produit_table = QTableWidget()
+        self.produit_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.produit_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.produit_table.setSelectionMode(QTableWidget.SingleSelection)
         self.produit_table.setColumnCount(7)
         self.produit_table.setHorizontalHeaderLabels(
             ["ID", "Nom", "Prix", "Description", "Max", "Quantité", "nb Restock"]

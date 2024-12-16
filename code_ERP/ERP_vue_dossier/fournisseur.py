@@ -50,6 +50,9 @@ class QFournisseur(QWidget):
 
         # Suppliers table
         self.supplier_table = QTableWidget()
+        self.supplier_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.supplier_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.supplier_table.setSelectionMode(QTableWidget.SingleSelection)
         self.supplier_table.setColumnCount(5)  # Ajustez le nombre de colonnes selon vos besoins
         self.supplier_table.setHorizontalHeaderLabels(
             ["ID", "Nom", "Adresse", "Téléphone", "Email"]

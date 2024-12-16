@@ -200,6 +200,9 @@ class QStock(QWidget):
         # Stock table (Liste, max, qte, restock, prix)
         self.stock_table = QTableWidget()
         self.stock_table.setColumnCount(6)
+        self.stock_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.stock_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.stock_table.setSelectionMode(QTableWidget.SingleSelection)
         self.stock_table.setHorizontalHeaderLabels(
             ["Nom", "Code Produit", "Max", "Quantité", "Restock", "Prix"]
         )

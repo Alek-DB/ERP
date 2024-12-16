@@ -33,6 +33,9 @@ class QFinanceFournisseurReport(QWidget):
         # Tableau pour les commandes et leurs prix
         self.table = QTableWidget()
         self.table.setColumnCount(4)
+        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setSelectionMode(QTableWidget.SingleSelection)
         self.table.setHorizontalHeaderLabels(["Fournisseur", "Commande", "Prix payé", "Statut"])
         
         
