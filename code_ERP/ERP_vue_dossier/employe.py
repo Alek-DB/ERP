@@ -21,6 +21,10 @@ class QEmploye(QWidget):
         button_layout = QHBoxLayout()
         button_layout.addWidget(button5)
         
+        button6 = QPushButton("Gérer client")
+        button6.clicked.connect(parent.basculer_vers_stock)
+        button_layout.addWidget(button6)
+        
         back_button = QPushButton("<-")
         back_button.clicked.connect(parent.basculer_before)
         

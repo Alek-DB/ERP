@@ -24,14 +24,11 @@ class QFinance(QWidget):
         supplier_order_button = QPushButton("Commande Fournisseur")
 
         # Style des boutons (facultatif)
-        button_style = "background-color: #f0a500; padding: 20px; font-size: 14px; font-weight: bold;"
-        report_finance_button.setStyleSheet(button_style)
+        
         report_finance_button.clicked.connect(self.show_finance_report)
 
-        report_supplier_finance_button.setStyleSheet(button_style)
         report_supplier_finance_button.clicked.connect(self.show_supplier_report)
         
-        supplier_order_button.setStyleSheet(button_style)
         supplier_order_button.clicked.connect(self.show_fournisseur_commandes)
 
         # Ajout des boutons au layout
