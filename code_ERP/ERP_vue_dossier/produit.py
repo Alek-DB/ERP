@@ -208,7 +208,14 @@ class QProduit(QWidget):
 
         # Stock table
         self.produit_table = QTableWidget()
+<<<<<<< HEAD
+        self.produit_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.produit_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.produit_table.setSelectionMode(QTableWidget.SingleSelection)
+        self.produit_table.setColumnCount(7)
+=======
         self.produit_table.setColumnCount(4)  # Mise à jour du nombre de colonnes
+>>>>>>> cd0f4540d34bb4fdf0979d74daa6a8ce93648c00
         self.produit_table.setHorizontalHeaderLabels(
             ["ID", "Nom", "Code", "Prix", "Description"]
         )

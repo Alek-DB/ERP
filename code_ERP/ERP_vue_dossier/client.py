@@ -52,6 +52,9 @@ class QClient(QWidget):
 
         # Tableau des clients
         self.client_table = QTableWidget()
+        self.client_table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.client_table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.client_table.setSelectionMode(QTableWidget.SingleSelection)
         self.client_table.setColumnCount(5)  # Code, Prenom, Nom, Factures, Commandes
         self.client_table.setHorizontalHeaderLabels(
             ["Code", "Prenom", "Nom", "Factures", "Commandes"]

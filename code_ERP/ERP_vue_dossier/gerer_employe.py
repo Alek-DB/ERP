@@ -230,18 +230,18 @@ class QGereEmploye(QWidget):
 
         # Search bar
         search_label = QLabel("Rechercher :")
-        search_input = QLineEdit()
+        self.search_input = QLineEdit()
+        self.search_input.textChanged.connect(self.search_items)
 
         search_layout = QHBoxLayout()
         search_layout.addWidget(search_label)
-        search_layout.addWidget(search_input)
+        search_layout.addWidget(self.search_input)
         employe_layout.addLayout(search_layout, 1, 1)
 
         self.employe_table = QTableWidget()
         self.employe_table.setEditTriggers(QTableWidget.NoEditTriggers)
         self.employe_table.setSelectionBehavior(QTableWidget.SelectRows)
         self.employe_table.setSelectionMode(QTableWidget.SingleSelection)
-        self.modify_item()
         self.employe_table.setColumnCount(5)  # Ajuster en fonction des colonnes d'employés
         self.setLayout(employe_layout)
         self.load_employe()
@@ -288,15 +288,13 @@ class QGereEmploye(QWidget):
         dialog.exec_()
 
     def remove_item(self):
-        self.employe_table.itemClicked.disconnect()
-        self.remove_button.setStyleSheet("background-color: lightCoral;")
-        self.modify_button.setStyleSheet("background-color: ;")
-        self.horaire_button.setStyleSheet("background-color: ;")
-        self.employe_table.itemClicked.connect(self.confirm_deletion)
-
-    def confirm_deletion(self, item):
-        row = item.row()
-
+        selected_items = self.employe_table.selectedItems()
+        if not selected_items:
+            QMessageBox.warning(self, "Attention", "Veuillez sélectionner un produit à supprimer.")
+            return
+        """Demander confirmation avant de supprimer un élément."""
+        # Obtenir la ligne de l'élément sélectionné
+        row = selected_items[0].row()
         id_employe = self.employe_table.item(row, 0).text()
 
         confirmation_dialog = QMessageBox()
@@ -313,6 +311,7 @@ class QGereEmploye(QWidget):
         self.employe_table.itemClicked.disconnect()
         self.remove_button.setStyleSheet("background-color: ;")
         self.load_employe()
+
 
     def delete_employe(self, id_employe):
         try:
@@ -333,15 +332,13 @@ class QGereEmploye(QWidget):
             QMessageBox.critical(None, "Erreur", f"Une erreur est survenue lors de la supression : {e}")
 
     def modify_item(self):
-        self.employe_table.itemClicked.disconnect()
-        self.modify_button.setStyleSheet("background-color: lightgreen;")
-        self.remove_button.setStyleSheet("background-color: ;")
-        self.horaire_button.setStyleSheet("background-color: ;")
-        self.employe_table.itemClicked.connect(self.open_modify_dialog)
-
-    def open_modify_dialog(self, item):
-        row = item.row()
-
+        selected_items = self.employe_table.selectedItems()
+        if not selected_items:
+            QMessageBox.warning(self, "Attention", "Veuillez sélectionner un produit à modifier.")
+            return
+        """Demander confirmation avant de supprimer un élément."""
+        # Obtenir la ligne de l'élément sélectionné
+        row = selected_items[0].row()
         id_employe = self.employe_table.item(row, 0).text()  # Ajustez selon votre structure
 
         query = "SELECT * FROM Employes WHERE id_employe = ?"
@@ -356,6 +353,7 @@ class QGereEmploye(QWidget):
 
         dialog = AddModifyDialog(self, mode="Modifier", employee_data=employee_data)
         dialog.exec_()
+
 
     def update_employee(self, old_username_employe, new_values):
         try:
@@ -376,11 +374,24 @@ class QGereEmploye(QWidget):
             print(f"Erreur lors de la mise à jour de l'employé: {e}")
             
     def horaire_item(self):
-        self.employe_table.itemClicked.disconnect()
-        self.modify_button.setStyleSheet("background-color: ;")
-        self.remove_button.setStyleSheet("background-color: ;")
-        self.horaire_button.setStyleSheet("background-color: lightYellow;")
-        self.employe_table.itemClicked.connect(self.go_to)
+        selected_items = self.succursale_table.selectedItems()
+        if not selected_items:
+            QMessageBox.warning(self, "Attention", "Veuillez sélectionner un produit à supprimer.")
+            return
+        """Demander confirmation avant de supprimer un élément."""
+        # Obtenir la ligne de l'élément sélectionné
+        row = selected_items[0].row()
+        self.vue.basculer_vers_horaire(self.employe_table.item(row, 0).text())
     
-    def go_to(self, item):
-        self.vue.basculer_vers_horaire(self.employe_table.item(item.row(), 0).text())
+
+
+
+
+    def search_items(self):
+        search_text = self.search_input.text().lower()
+        for row in range(self.employe_table.rowCount()):
+            item = self.employe_table.item(row, 1)  # Nom du produit
+            if search_text in item.text().lower():
+                self.employe_table.setRowHidden(row, False)
+            else:
+                self.employe_table.setRowHidden(row, True)
